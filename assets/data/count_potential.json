@@ -1,0 +1,18 @@
+{
+  "count_potential": {
+    "_note": "PLACEHOLDER — Replace with your mill's count potential table. Maps fibre length (mm) and micronaire ranges to practical Ne count range.",
+    "by_length_micronaire": [
+      {"length_min_mm": 25.0, "length_max_mm": 27.0, "mic_min": 3.5, "mic_max": 4.5, "count_min_ne": 16, "count_max_ne": 30},
+      {"length_min_mm": 27.0, "length_max_mm": 29.0, "mic_min": 3.5, "mic_max": 4.5, "count_min_ne": 24, "count_max_ne": 40},
+      {"length_min_mm": 29.0, "length_max_mm": 31.0, "mic_min": 3.5, "mic_max": 4.5, "count_min_ne": 30, "count_max_ne": 54},
+      {"length_min_mm": 31.0, "length_max_mm": 33.0, "mic_min": 3.0, "mic_max": 4.0, "count_min_ne": 40, "count_max_ne": 70},
+      {"length_min_mm": 33.0, "length_max_mm": 36.0, "mic_min": 3.0, "mic_max": 3.8, "count_min_ne": 54, "count_max_ne": 100},
+      {"length_min_mm": 36.0, "length_max_mm": 40.0, "mic_min": 2.5, "mic_max": 3.5, "count_min_ne": 70, "count_max_ne": 120}
+    ]
+  },
+  "route_adjustments": {
+    "carded_ring": -0.15,
+    "combed_ring": 0.0,
+    "combed_compact": 0.10
+  }
+}

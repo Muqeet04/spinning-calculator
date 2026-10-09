@@ -1,0 +1,14 @@
+{
+  "reference_table": [
+    {"count_ne": 20, "spindle_speed_rpm": 15500, "tpi": 18.40, "bobbin_weight_g": 70.0, "roving_package_weight_g": 1800, "tm": 4.11},
+    {"count_ne": 24, "spindle_speed_rpm": 17500, "tpi": 19.60, "bobbin_weight_g": 62.0, "roving_package_weight_g": 1700, "tm": 4.00},
+    {"count_ne": 30, "spindle_speed_rpm": 19500, "tpi": 21.08, "bobbin_weight_g": 55.0, "roving_package_weight_g": 1600, "tm": 3.85},
+    {"count_ne": 34, "spindle_speed_rpm": 20500, "tpi": 21.90, "bobbin_weight_g": 50.0, "roving_package_weight_g": 1550, "tm": 3.76},
+    {"count_ne": 40, "spindle_speed_rpm": 22712, "tpi": 22.96, "bobbin_weight_g": 45.1, "roving_package_weight_g": 1500, "tm": 3.63},
+    {"count_ne": 50, "spindle_speed_rpm": 22000, "tpi": 25.46, "bobbin_weight_g": 38.0, "roving_package_weight_g": 1400, "tm": 3.60},
+    {"count_ne": 60, "spindle_speed_rpm": 21000, "tpi": 27.89, "bobbin_weight_g": 33.0, "roving_package_weight_g": 1300, "tm": 3.60},
+    {"count_ne": 70, "spindle_speed_rpm": 19500, "tpi": 30.12, "bobbin_weight_g": 28.0, "roving_package_weight_g": 1200, "tm": 3.60},
+    {"count_ne": 80.2, "spindle_speed_rpm": 18000, "tpi": 32.26, "bobbin_weight_g": 24.0, "roving_package_weight_g": 1100, "tm": 3.60}
+  ],
+  "_note": "PLACEHOLDER — Replace with your mill's actual reference values. These are approximate industry values."
+}

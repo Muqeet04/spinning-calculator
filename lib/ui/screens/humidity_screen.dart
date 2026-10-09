@@ -1,0 +1,169 @@
+import 'package:flutter/material.dart';
+import '../../core/calc/humidity.dart';
+import '../widgets/page_scaffold.dart';
+import '../widgets/input_card.dart';
+import '../widgets/result_tile.dart';
+import '../widgets/styled_text_field.dart';
+import '../widgets/styled_dropdown.dart';
+
+class HumidityScreen extends StatefulWidget {
+  const HumidityScreen({super.key});
+
+  @override
+  State<HumidityScreen> createState() => _HumidityScreenState();
+}
+
+class _HumidityScreenState extends State<HumidityScreen> {
+  String _dryBulbF = '';
+  String _wetBulbF = '';
+  String _pressure = '1013.25';
+  String _psychrometerType = 'Aspirated / sling (A=0.000662)';
+  
+  HumidityResult? _result;
+  String? _errorMsg;
+
+  void _calculate() {
+    setState(() {
+      _result = null;
+      _errorMsg = null;
+      
+      final dryF = double.tryParse(_dryBulbF);
+      final wetF = double.tryParse(_wetBulbF);
+      final p = double.tryParse(_pressure) ?? 1013.25;
+
+      if (dryF == null || wetF == null) {
+        return;
+      }
+
+      if (wetF > dryF) {
+        _errorMsg = 'Wet bulb temperature must be ≤ dry bulb temperature.';
+        return;
+      }
+
+      _result = HumidityCalculator.calculate(
+        dryBulbF: dryF,
+        wetBulbF: wetF,
+        pressure: p == 0 ? 1013.25 : p,
+        isAspirated: _psychrometerType == 'Aspirated / sling (A=0.000662)',
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PageScaffold(
+      title: 'Relative Humidity Calculator',
+      subtitle: 'Dry & wet bulb °F to °C, RH% from a psychrometer reading',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: InputCard(
+                  title: 'Inputs',
+                  child: Column(
+                    children: [
+                      StyledTextField(
+                        label: 'Dry bulb temperature (°F)',
+                        isNumber: true,
+                        onChanged: (val) {
+                          _dryBulbF = val;
+                          _calculate();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      StyledTextField(
+                        label: 'Wet bulb temperature (°F)',
+                        isNumber: true,
+                        errorText: _errorMsg,
+                        onChanged: (val) {
+                          _wetBulbF = val;
+                          _calculate();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      StyledTextField(
+                        label: 'Atmospheric pressure (hPa)',
+                        isNumber: true,
+                        onChanged: (val) {
+                          _pressure = val;
+                          _calculate();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      StyledDropdown<String>(
+                        label: 'Psychrometer type',
+                        value: _psychrometerType,
+                        items: const [
+                          DropdownMenuItem(value: 'Aspirated / sling (A=0.000662)', child: Text('Aspirated / sling (A=0.000662)')),
+                          DropdownMenuItem(value: 'Natural draft (A=0.0008)', child: Text('Natural draft (A=0.0008)')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            _psychrometerType = val;
+                            _calculate();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  children: [
+                    InputCard(
+                      title: 'Results',
+                      child: GridView.count(
+                        crossAxisCount: 3,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.5,
+                        children: [
+                          ResultTile(
+                            label: 'Dry bulb °C',
+                            value: _result?.dryBulbC.toStringAsFixed(2),
+                          ),
+                          ResultTile(
+                            label: 'Wet bulb °C',
+                            value: _result?.wetBulbC.toStringAsFixed(2),
+                          ),
+                          ResultTile(
+                            label: 'RH %',
+                            value: _result?.relativeHumidity.toStringAsFixed(2),
+                            highlight: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const InputCard(
+                      title: 'Typical Targets',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• Blow room / Carding: 55–60%', style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text('• Ring spinning: 45–55%', style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 8),
+                          Text('• Winding: 60–70%', style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
