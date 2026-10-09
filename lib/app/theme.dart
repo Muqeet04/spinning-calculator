@@ -52,6 +52,11 @@ class SpinLogicTheme {
         error: SpinColors.errorRed,
       ),
       fontFamily: 'Roboto',
+      dataTableTheme: const DataTableThemeData(
+        dataRowMinHeight: 64,
+        dataRowMaxHeight: double.infinity,
+        headingRowHeight: 64,
+      ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(color: SpinColors.textPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
         displayMedium: TextStyle(color: SpinColors.textPrimary, fontWeight: FontWeight.bold, letterSpacing: -0.5),
@@ -94,7 +99,7 @@ class SpinLogicTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          textStyle: const TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w600, fontSize: 14),
         ),
       ),
     );

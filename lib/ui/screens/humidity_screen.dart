@@ -8,6 +8,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class HumidityScreen extends StatefulWidget {
   const HumidityScreen({super.key});
@@ -157,7 +158,8 @@ class _HumidityScreenState extends State<HumidityScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          ResponsiveRow(
+            breakpoint: 900,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
@@ -224,13 +226,7 @@ class _HumidityScreenState extends State<HumidityScreen> {
                   children: [
                     InputCard(
                       title: 'Results',
-                      child: GridView.count(
-                        crossAxisCount: 3,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.5,
+                      child: ResponsiveResults(
                         children: [
                           ResultTile(
                             label: 'Dry bulb °C',

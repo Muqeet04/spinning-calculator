@@ -6,6 +6,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/pdf_report_helpers.dart';
 import '../../app/theme.dart';
+import '../widgets/responsive_layout.dart';
 
 class CottonRow {
   String name;
@@ -348,7 +349,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          ResponsiveRow(
             children: [
               Expanded(
                 child: StyledTextField(
@@ -372,8 +373,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          ResponsiveTable(
             child: DataTable(
               columns: const [
                 DataColumn(label: Text('Cotton')),
@@ -510,7 +510,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          ResponsiveRow(
             children: [
               Expanded(
                   child: StyledTextField(
@@ -553,9 +553,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
+          ResponsiveResults(
             children: [
               SizedBox(
                   width: 200,
@@ -605,7 +603,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          ResponsiveRow(
             children: [
               Expanded(
                   child: StyledTextField(
@@ -630,8 +628,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          ResponsiveTable(
             child: DataTable(
               columns: const [
                 DataColumn(label: Text('Count')),
@@ -751,8 +748,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          ResponsiveTable(
             child: DataTable(
               columns: const [
                 DataColumn(label: Text('Count')),
@@ -891,9 +887,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
 
     return InputCard(
       title: '5. Summary',
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 16,
+      child: ResponsiveResults(
         children: [
           SizedBox(
             width: 250,

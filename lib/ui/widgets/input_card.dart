@@ -5,11 +5,7 @@ class InputCard extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const InputCard({
-    super.key,
-    required this.title,
-    required this.child,
-  });
+  const InputCard({super.key, required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +22,7 @@ class InputCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 16 : 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -41,13 +37,15 @@ class InputCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: SpinColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: SpinColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ),
             ],

@@ -7,6 +7,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class NewMillsPlanScreen extends ConsumerStatefulWidget {
   const NewMillsPlanScreen({super.key});
@@ -259,8 +260,7 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
             title: '1. Bags Required',
             child: Column(
               children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                ResponsiveTable(
                   child: DataTable(
                     columns: const [
                       DataColumn(label: Text('Quality')),
@@ -294,9 +294,7 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
                   label: const Text('Add count'),
                 ),
                 const SizedBox(height: 16),
-                const Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                const ResponsiveResults(
                   children: [
                     ResultTile(label: 'Combed Bags Total', value: '100'),
                     ResultTile(label: 'Carded Bags Total', value: '100'),
@@ -312,8 +310,7 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
           const SizedBox(height: 16),
           InputCard(
             title: '2. Ring & Autocone',
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            child: ResponsiveTable(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('Count')),
@@ -382,8 +379,7 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
           const SizedBox(height: 16),
           InputCard(
             title: '9. Summary table',
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            child: ResponsiveTable(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('Department')),

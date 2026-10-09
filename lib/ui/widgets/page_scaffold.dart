@@ -44,14 +44,21 @@ class PageScaffold extends StatelessWidget {
             children: [
               _buildHeader(context),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1080),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24.0, vertical: 28.0),
-                        child: child,
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1080),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.sizeOf(context).width < 600
+                                ? 16
+                                : 24,
+                            vertical: 20,
+                          ),
+                          child: child,
+                        ),
                       ),
                     ),
                   ),
@@ -65,6 +72,82 @@ class PageScaffold extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    if (size.width >= 800 * scale.clamp(1, 1.5) && size.height >= 500) {
+      return _buildWideHeader(context);
+    }
+    final isHome = title == 'MM spinning calculator' || title == 'Spin Logic';
+    return Material(
+      color: SpinColors.royalNavy,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: SpinColors.emerald, width: 2.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              if (!isHome)
+                IconButton(
+                  tooltip: 'Back to Menu',
+                  style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  width: 32,
+                  height: 32,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              PopupMenuButton<String>(
+                tooltip: 'Actions',
+                style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (action) {
+                  switch (action) {
+                    case 'data':
+                      _handleSaveData(context);
+                    case 'print':
+                      _handlePrint(context);
+                    case 'pdf':
+                      _handleSavePdf(context);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'data', child: Text('Save data')),
+                  if (onGeneratePdfReport != null) ...[
+                    const PopupMenuItem(value: 'print', child: Text('Print')),
+                    const PopupMenuItem(value: 'pdf', child: Text('Save PDF')),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWideHeader(BuildContext context) {
     final isHome = title == 'MM spinning calculator' || title == 'Spin Logic';
     return Container(
       decoration: const BoxDecoration(
@@ -93,24 +176,31 @@ class PageScaffold extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
+                      constraints: const BoxConstraints(minHeight: 48),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2)),
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.arrow_back, color: Colors.white, size: 16),
                           SizedBox(width: 8),
-                          Text('Back to Menu',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
+                          Text(
+                            'Back to Menu',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -252,6 +342,7 @@ class PageScaffold extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: bg,
@@ -286,8 +377,11 @@ class PageScaffold extends StatelessWidget {
         behavior: SnackBarBehavior.floating,
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline,
-                color: SpinColors.emerald, size: 18),
+            const Icon(
+              Icons.check_circle_outline,
+              color: SpinColors.emerald,
+              size: 18,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -339,7 +433,8 @@ class PageScaffold extends StatelessWidget {
             backgroundColor: SpinColors.emerald,
             behavior: SnackBarBehavior.floating,
             content: Text(
-                'PDF generated successfully! Save or share dialog opened.'),
+              'PDF generated successfully! Save or share dialog opened.',
+            ),
           ),
         );
       }
@@ -369,8 +464,9 @@ class PageScaffold extends StatelessWidget {
     final emeraldColor = PdfColor.fromHex('10B981');
     final blueColor = PdfColor.fromHex('1D4ED8');
 
-    final dynamicContent =
-        await reportBuilder(pw.Context(document: pdf.document));
+    final dynamicContent = await reportBuilder(
+      pw.Context(document: pdf.document),
+    );
     if (dynamicContent.isEmpty) {
       throw StateError('The calculation report for "$title" is empty.');
     }
@@ -392,28 +488,30 @@ class PageScaffold extends StatelessWidget {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Expanded(
-                    child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      'MM spinning calculator',
-                      style: const pw.TextStyle(
-                        color: PdfColors.white,
-                        fontSize: 16,
-                        fontWeight: pw.FontWeight.bold,
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'MM spinning calculator',
+                        style: const pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    pw.SizedBox(height: 2),
-                    pw.Text(
-                      PdfReportHelpers.printableText(
-                          'Engineering Report: $title'),
-                      style: const pw.TextStyle(
-                        color: PdfColors.grey300,
-                        fontSize: 11,
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        PdfReportHelpers.printableText(
+                          'Engineering Report: $title',
+                        ),
+                        style: const pw.TextStyle(
+                          color: PdfColors.grey300,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
-                  ],
-                )),
+                    ],
+                  ),
+                ),
                 pw.SizedBox(width: 16),
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -445,22 +543,28 @@ class PageScaffold extends StatelessWidget {
             padding: const pw.EdgeInsets.only(top: 6),
             decoration: const pw.BoxDecoration(
               border: pw.Border(
-                  top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
+                top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+              ),
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Expanded(
-                    child: pw.Text(
-                  'MM spinning calculator Suite - muqeetmahmood8@gmail.com',
-                  style:
-                      const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-                )),
+                  child: pw.Text(
+                    'MM spinning calculator Suite - muqeetmahmood8@gmail.com',
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                ),
                 pw.SizedBox(width: 12),
                 pw.Text(
                   'Page ${context.pageNumber} of ${context.pagesCount}',
-                  style:
-                      const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                  ),
                 ),
               ],
             ),
@@ -492,21 +596,26 @@ class PageScaffold extends StatelessWidget {
                     pw.Text(
                       PdfReportHelpers.printableText(subtitle!),
                       style: const pw.TextStyle(
-                          fontSize: 9, color: PdfColors.grey700),
+                        fontSize: 9,
+                        color: PdfColors.grey700,
+                      ),
                     ),
                   ],
                   pw.SizedBox(height: 8),
                   pw.Text(
                     'Current inputs and results',
                     style: pw.TextStyle(
-                        fontSize: 9,
-                        fontWeight: pw.FontWeight.bold,
-                        color: emeraldColor),
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                      color: emeraldColor,
+                    ),
                   ),
                   pw.Text(
                     'Generated: ${DateTime.now().toLocal().toString().split('.')[0]}',
                     style: const pw.TextStyle(
-                        fontSize: 8, color: PdfColors.grey600),
+                      fontSize: 8,
+                      color: PdfColors.grey600,
+                    ),
                   ),
                 ],
               ),
