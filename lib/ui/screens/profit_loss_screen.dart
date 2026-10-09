@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../widgets/page_scaffold.dart';
 import '../widgets/input_card.dart';
 import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
+import '../widgets/pdf_report_helpers.dart';
 import '../../app/theme.dart';
 
 class CottonRow {
@@ -12,7 +14,8 @@ class CottonRow {
   double cmYield;
   double percentage;
 
-  CottonRow(this.name, this.rateKg, this.cdYield, this.cmYield, this.percentage);
+  CottonRow(
+      this.name, this.rateKg, this.cdYield, this.cmYield, this.percentage);
 }
 
 class CountRow {
@@ -24,7 +27,8 @@ class CountRow {
   int spindlesPerFrame;
   double saleLb;
 
-  CountRow(this.count, this.blend, this.channel, this.ops, this.frames, this.spindlesPerFrame, this.saleLb);
+  CountRow(this.count, this.blend, this.channel, this.ops, this.frames,
+      this.spindlesPerFrame, this.saleLb);
 }
 
 class ProfitLossScreen extends StatefulWidget {
@@ -61,11 +65,244 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
     CountRow('30/1 Carded', 'Carded', 'Local', 8.50, 10, 1824, 0),
   ];
 
+  Future<List<pw.Widget>> _buildPdfReport(pw.Context context) async {
+    final widgets = <pw.Widget>[
+      PdfReportHelpers.sectionTitle('1. Raw Material Cost & Blend Matrix'),
+      PdfReportHelpers.keyValGrid({
+        'Kg per maund': maundFactor.toStringAsFixed(4),
+        'Noil price / kg': noilPriceKg.toStringAsFixed(2),
+        'Working days / month': '$workingDays',
+        'Export packing rate / lb': exportPackingRateLb.toStringAsFixed(2),
+        'Local packing rate / lb': localPackingRateLb.toStringAsFixed(2),
+        'Shifts / day': '$shiftsPerDay',
+        'Spindle cost / spindle / shift':
+            spindleCostPerShift.toStringAsFixed(2),
+      }),
+      pw.SizedBox(height: 8),
+    ];
+
+    final totalPct = cottons.fold(0.0, (sum, c) => sum + c.percentage);
+    double avgRateKg = 0;
+    double avgCmYield = 0;
+    double avgComberNoil = 0;
+    double avgCostLbCd = 0;
+    double avgCostLbCm = 0;
+    final cottonRowsPdf = <List<String>>[];
+    for (final c in cottons) {
+      final weight = c.percentage / 100;
+      final costCd =
+          c.cdYield > 0 ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0.0;
+      final costCm =
+          c.cmYield > 0 ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0.0;
+      final noilPct = (c.cdYield - c.cmYield) * weight;
+      if (totalPct > 0) {
+        avgRateKg += c.rateKg * weight;
+        avgCmYield += c.cmYield * weight;
+        avgComberNoil += noilPct;
+        avgCostLbCd += costCd * weight;
+        avgCostLbCm += costCm * weight;
+      }
+      cottonRowsPdf.add([
+        c.name,
+        c.rateKg.toStringAsFixed(2),
+        (c.rateKg * maundFactor).toStringAsFixed(2),
+        c.cdYield.toStringAsFixed(2),
+        c.cmYield.toStringAsFixed(2),
+        noilPct.toStringAsFixed(2),
+        costCd.toStringAsFixed(2),
+        costCm.toStringAsFixed(2),
+        c.percentage.toStringAsFixed(2),
+      ]);
+    }
+    cottonRowsPdf.add([
+      'Avg/Total',
+      avgRateKg.toStringAsFixed(2),
+      (avgRateKg * maundFactor).toStringAsFixed(2),
+      '-',
+      '-',
+      avgComberNoil.toStringAsFixed(2),
+      avgCostLbCd.toStringAsFixed(2),
+      avgCostLbCm.toStringAsFixed(2),
+      totalPct.toStringAsFixed(2),
+    ]);
+    if ((totalPct - 100).abs() > 0.01) {
+      widgets.add(pw.Text(
+        'Blend percentages do not add up to 100 (currently ${totalPct.toStringAsFixed(2)}%).',
+        style: const pw.TextStyle(fontSize: 9),
+      ));
+      widgets.add(pw.SizedBox(height: 6));
+    }
+    widgets.add(PdfReportHelpers.dataTable(
+      headers: [
+        'Cotton',
+        'Rate/Kg',
+        'Rate/Maund',
+        'CD %',
+        'CM %',
+        'Noil %',
+        'Cost/Lb CD',
+        'Cost/Lb CM',
+        'Blend %'
+      ],
+      rows: cottonRowsPdf,
+      flexWidths: [2, 1.8, 2.2, 1.5, 1.5, 1.5, 2, 2, 1.5],
+    ));
+
+    final noilPriceLb = noilPriceKg / 2.20462;
+    final noilDeductionLb = noilPriceLb * (avgComberNoil / 100);
+    final netCombedCostLb = avgCostLbCm - noilDeductionLb;
+    widgets.add(PdfReportHelpers.sectionTitle(
+        '2. Noil Deduction & Net Raw Material Cost'));
+    widgets.add(PdfReportHelpers.keyValGrid({
+      'Blend avg rate / lb': (avgRateKg / 2.20462).toStringAsFixed(4),
+      'Avg CM yield (combed)': '${avgCmYield.toStringAsFixed(2)}%',
+      'Avg comber noil (blend)': '${avgComberNoil.toStringAsFixed(2)}%',
+      'Noil price / lb': noilPriceLb.toStringAsFixed(4),
+      'Noil deduction / lb of cotton': noilDeductionLb.toStringAsFixed(4),
+      'Net Carded cost / lb': avgCostLbCd.toStringAsFixed(4),
+      'Net Combed cost / lb': netCombedCostLb.toStringAsFixed(4),
+    }));
+
+    final setupRows = <List<String>>[];
+    final makingRows = <List<String>>[];
+    final costRows = <List<String>>[];
+    final profitRows = <List<String>>[];
+    double profitPerDay = 0;
+    for (final c in counts) {
+      final totalSpindles = c.frames * c.spindlesPerFrame;
+      final lbsFrameDay = c.spindlesPerFrame * (c.ops / 16) * shiftsPerDay;
+      final lbsDay = c.frames * lbsFrameDay;
+      final makingCostDay = spindleCostPerShift * totalSpindles * shiftsPerDay;
+      final makingLb = lbsDay > 0 ? makingCostDay / lbsDay : 0.0;
+      final rawMatLb = c.blend == 'Combed' ? netCombedCostLb : avgCostLbCd;
+      final totalMakRaw = makingLb + rawMatLb;
+      final packingLb =
+          c.channel == 'Export' ? exportPackingRateLb : localPackingRateLb;
+      final grandTotal = totalMakRaw + packingLb;
+      final diffLb = c.saleLb - grandTotal;
+      final diffTotal = diffLb * lbsDay;
+      profitPerDay += diffTotal;
+      setupRows.add([
+        c.count,
+        c.blend,
+        c.channel,
+        c.ops.toStringAsFixed(2),
+        '${c.frames}',
+        '${c.spindlesPerFrame}',
+        '$totalSpindles',
+      ]);
+      makingRows.add([
+        c.count,
+        lbsFrameDay.toStringAsFixed(2),
+        lbsDay.toStringAsFixed(2),
+        makingCostDay.toStringAsFixed(2),
+        makingLb.toStringAsFixed(4),
+      ]);
+      costRows.add([
+        c.count,
+        c.channel,
+        makingLb.toStringAsFixed(4),
+        rawMatLb.toStringAsFixed(4),
+        totalMakRaw.toStringAsFixed(4),
+        packingLb.toStringAsFixed(4),
+        grandTotal.toStringAsFixed(4),
+      ]);
+      profitRows.add([
+        c.count,
+        lbsDay.toStringAsFixed(2),
+        grandTotal.toStringAsFixed(4),
+        c.saleLb.toStringAsFixed(2),
+        diffLb.toStringAsFixed(4),
+        diffTotal.toStringAsFixed(2),
+      ]);
+    }
+    widgets.addAll([
+      PdfReportHelpers.sectionTitle('3. Making Charges & Spindle Economics'),
+      PdfReportHelpers.dataTable(
+        headers: [
+          'Count',
+          'Blend',
+          'Channel',
+          'OPS',
+          'Frames',
+          'Spindles/Frame',
+          'Total Spindles'
+        ],
+        rows: setupRows,
+        flexWidths: [2.5, 1.8, 1.8, 1.3, 1.2, 2, 2],
+      ),
+      pw.SizedBox(height: 8),
+      pw.NewPage(freeSpace: 80),
+      PdfReportHelpers.dataTable(
+        headers: [
+          'Count',
+          'Lbs/Frame/Day',
+          'Lbs/Day',
+          'Making Cost/Day',
+          'Making/Lb'
+        ],
+        rows: makingRows,
+        flexWidths: [2.5, 2.2, 2, 2.5, 2],
+      ),
+      PdfReportHelpers.sectionTitle('4. Cost Per Lb & Profit / Loss Per Count'),
+      PdfReportHelpers.dataTable(
+        headers: [
+          'Count',
+          'Channel',
+          'Making/Lb',
+          'Raw Material/Lb',
+          'Total (Making+Raw)',
+          'Packing/Lb',
+          'Grand Total Cost/Lb'
+        ],
+        rows: costRows,
+        flexWidths: [2.5, 1.5, 1.8, 2, 2.2, 1.8, 2.2],
+      ),
+      pw.SizedBox(height: 8),
+      PdfReportHelpers.dataTable(
+        headers: [
+          'Count',
+          'Lbs/Day',
+          'Grand Total Cost/Lb',
+          'Sale/Lb',
+          'Diff/Lb',
+          'Diff.Total'
+        ],
+        rows: profitRows,
+        flexWidths: [2.5, 2, 2.5, 1.8, 1.8, 2.2],
+      ),
+      PdfReportHelpers.sectionTitle('5. Mill Profit / Loss Summary'),
+      pw.Row(children: [
+        pw.Expanded(
+            child: PdfReportHelpers.summaryCard(
+          'Profit / Loss Per Day',
+          profitPerDay.toStringAsFixed(2),
+          highlight: profitPerDay >= 0,
+        )),
+        pw.Expanded(
+            child: PdfReportHelpers.summaryCard(
+          'Profit / Loss Per Month',
+          (profitPerDay * workingDays).toStringAsFixed(2),
+          highlight: profitPerDay >= 0,
+        )),
+        pw.Expanded(
+            child: PdfReportHelpers.summaryCard(
+          'Profit / Loss Per Year',
+          (profitPerDay * workingDays * 12).toStringAsFixed(2),
+          highlight: profitPerDay >= 0,
+        )),
+      ]),
+    ]);
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageScaffold(
       title: 'Cotton blend costing & mill profit / loss',
-      subtitle: 'Raw-material blend cost, making charges and profit-loss per day, month and year.',
+      subtitle:
+          'Raw-material blend cost, making charges and profit-loss per day, month and year.',
+      onGeneratePdfReport: _buildPdfReport,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -96,8 +333,10 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       for (var c in cottons) {
         double w = c.percentage / 100;
         avgRateKg += c.rateKg * w;
-        double costCd = (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
-        double costCm = (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
+        double costCd =
+            (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
+        double costCm =
+            (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
         avgCostLbCd += costCd * w;
         avgCostLbCm += costCm * w;
         avgComberNoil += (c.cdYield - c.cmYield) * w;
@@ -115,8 +354,10 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
                 child: StyledTextField(
                   label: '1 maund = how many kg',
                   isNumber: true,
-                  controller: TextEditingController(text: maundFactor.toStringAsFixed(4)),
-                  onChanged: (v) => setState(() => maundFactor = double.tryParse(v) ?? 37.3242),
+                  controller: TextEditingController(
+                      text: maundFactor.toStringAsFixed(4)),
+                  onChanged: (v) => setState(
+                      () => maundFactor = double.tryParse(v) ?? 37.3242),
                 ),
               ),
               const Spacer(flex: 3),
@@ -126,7 +367,8 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
             const SizedBox(height: 16),
             Text(
               '%age does not add up to 100 (currently ${totalPct.toStringAsFixed(2)}%)',
-              style: const TextStyle(color: SpinColors.errorRed, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: SpinColors.errorRed, fontWeight: FontWeight.bold),
             ),
           ],
           const SizedBox(height: 16),
@@ -148,9 +390,14 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
               rows: [
                 ...cottons.map((c) {
                   double rateMaund = c.rateKg * maundFactor;
-                  double costCd = c.cdYield > 0 ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
-                  double costCm = c.cmYield > 0 ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
-                  double comberNoil = (c.cdYield - c.cmYield) * (c.percentage / 100);
+                  double costCd = c.cdYield > 0
+                      ? (c.rateKg / 2.20462) / (c.cdYield / 100)
+                      : 0;
+                  double costCm = c.cmYield > 0
+                      ? (c.rateKg / 2.20462) / (c.cmYield / 100)
+                      : 0;
+                  double comberNoil =
+                      (c.cdYield - c.cmYield) * (c.percentage / 100);
 
                   return DataRow(cells: [
                     DataCell(TextFormField(
@@ -159,44 +406,60 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
                     )),
                     DataCell(TextFormField(
                       initialValue: c.rateKg.toStringAsFixed(2),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) => setState(() => c.rateKg = double.tryParse(v) ?? 0),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (v) =>
+                          setState(() => c.rateKg = double.tryParse(v) ?? 0),
                     )),
                     DataCell(Text(rateMaund.toStringAsFixed(2))),
                     DataCell(TextFormField(
                       initialValue: c.cdYield.toStringAsFixed(2),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) => setState(() => c.cdYield = double.tryParse(v) ?? 0),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (v) =>
+                          setState(() => c.cdYield = double.tryParse(v) ?? 0),
                     )),
                     DataCell(TextFormField(
                       initialValue: c.cmYield.toStringAsFixed(2),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) => setState(() => c.cmYield = double.tryParse(v) ?? 0),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (v) =>
+                          setState(() => c.cmYield = double.tryParse(v) ?? 0),
                     )),
                     DataCell(Text(comberNoil.toStringAsFixed(2))),
                     DataCell(Text(costCd.toStringAsFixed(2))),
                     DataCell(Text(costCm.toStringAsFixed(2))),
                     DataCell(TextFormField(
                       initialValue: c.percentage.toStringAsFixed(2),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (v) => setState(() => c.percentage = double.tryParse(v) ?? 0),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (v) => setState(
+                          () => c.percentage = double.tryParse(v) ?? 0),
                     )),
                     DataCell(IconButton(
-                      icon: const Icon(Icons.delete, color: SpinColors.errorRed),
+                      icon:
+                          const Icon(Icons.delete, color: SpinColors.errorRed),
                       onPressed: () => setState(() => cottons.remove(c)),
                     )),
                   ]);
                 }),
                 DataRow(cells: [
-                  const DataCell(Text('Avg/Total', style: TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(Text(avgRateKg.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(Text((avgRateKg * maundFactor).toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
+                  const DataCell(Text('Avg/Total',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text(avgRateKg.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text((avgRateKg * maundFactor).toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
                   const DataCell(Text('-')),
                   const DataCell(Text('-')),
-                  DataCell(Text(avgComberNoil.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(Text(avgCostLbCd.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(Text(avgCostLbCm.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(Text(totalPct.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text(avgComberNoil.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text(avgCostLbCd.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text(avgCostLbCm.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+                  DataCell(Text(totalPct.toStringAsFixed(2),
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
                   const DataCell(Text('')),
                 ]),
               ],
@@ -206,7 +469,8 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
           ElevatedButton.icon(
             icon: const Icon(Icons.add),
             label: const Text('Add cotton'),
-            onPressed: () => setState(() => cottons.add(CottonRow('New', 0, 0, 0, 0))),
+            onPressed: () =>
+                setState(() => cottons.add(CottonRow('New', 0, 0, 0, 0))),
           ),
         ],
       ),
@@ -227,8 +491,10 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
         avgRateKg += c.rateKg * w;
         avgCmYield += c.cmYield * w;
         avgComberNoil += (c.cdYield - c.cmYield) * w;
-        double costCd = (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
-        double costCm = (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
+        double costCd =
+            (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
+        double costCm =
+            (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
         avgCostLbCd += costCd * w;
         avgCostLbCm += costCm * w;
       }
@@ -246,32 +512,43 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Noil price /kg',
                 isNumber: true,
-                controller: TextEditingController(text: noilPriceKg.toStringAsFixed(2)),
-                onChanged: (v) => setState(() => noilPriceKg = double.tryParse(v) ?? 0),
+                controller:
+                    TextEditingController(text: noilPriceKg.toStringAsFixed(2)),
+                onChanged: (v) =>
+                    setState(() => noilPriceKg = double.tryParse(v) ?? 0),
               )),
               const SizedBox(width: 16),
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Working days per month',
                 isNumber: true,
                 controller: TextEditingController(text: workingDays.toString()),
-                onChanged: (v) => setState(() => workingDays = int.tryParse(v) ?? 26),
+                onChanged: (v) =>
+                    setState(() => workingDays = int.tryParse(v) ?? 26),
               )),
               const SizedBox(width: 16),
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Export packing rate /lb',
                 isNumber: true,
-                controller: TextEditingController(text: exportPackingRateLb.toStringAsFixed(2)),
-                onChanged: (v) => setState(() => exportPackingRateLb = double.tryParse(v) ?? 0),
+                controller: TextEditingController(
+                    text: exportPackingRateLb.toStringAsFixed(2)),
+                onChanged: (v) => setState(
+                    () => exportPackingRateLb = double.tryParse(v) ?? 0),
               )),
               const SizedBox(width: 16),
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Local packing rate /lb',
                 isNumber: true,
-                controller: TextEditingController(text: localPackingRateLb.toStringAsFixed(2)),
-                onChanged: (v) => setState(() => localPackingRateLb = double.tryParse(v) ?? 0),
+                controller: TextEditingController(
+                    text: localPackingRateLb.toStringAsFixed(2)),
+                onChanged: (v) => setState(
+                    () => localPackingRateLb = double.tryParse(v) ?? 0),
               )),
             ],
           ),
@@ -280,13 +557,41 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
             spacing: 16,
             runSpacing: 16,
             children: [
-              SizedBox(width: 200, child: ResultTile(label: 'Blend avg rate/lb', value: blendAvgRateLb.toStringAsFixed(4))),
-              SizedBox(width: 200, child: ResultTile(label: 'Avg CM yield (combed)', value: '${avgCmYield.toStringAsFixed(2)}%')),
-              SizedBox(width: 200, child: ResultTile(label: 'Avg comber noil % (blend)', value: '${avgComberNoil.toStringAsFixed(2)}%')),
-              SizedBox(width: 200, child: ResultTile(label: 'Noil price /lb', value: noilPriceLb.toStringAsFixed(4))),
-              SizedBox(width: 200, child: ResultTile(label: 'Noil deduction /lb of cotton', value: noilDeductionLb.toStringAsFixed(4))),
-              SizedBox(width: 200, child: ResultTile(label: 'Net Carded cost /lb', value: avgCostLbCd.toStringAsFixed(4))),
-              SizedBox(width: 200, child: ResultTile(label: 'Net Combed cost /lb', value: netCombedCostLb.toStringAsFixed(4))),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Blend avg rate/lb',
+                      value: blendAvgRateLb.toStringAsFixed(4))),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Avg CM yield (combed)',
+                      value: '${avgCmYield.toStringAsFixed(2)}%')),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Avg comber noil % (blend)',
+                      value: '${avgComberNoil.toStringAsFixed(2)}%')),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Noil price /lb',
+                      value: noilPriceLb.toStringAsFixed(4))),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Noil deduction /lb of cotton',
+                      value: noilDeductionLb.toStringAsFixed(4))),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Net Carded cost /lb',
+                      value: avgCostLbCd.toStringAsFixed(4))),
+              SizedBox(
+                  width: 200,
+                  child: ResultTile(
+                      label: 'Net Combed cost /lb',
+                      value: netCombedCostLb.toStringAsFixed(4))),
             ],
           ),
         ],
@@ -302,18 +607,24 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Shifts per day',
                 isNumber: true,
-                controller: TextEditingController(text: shiftsPerDay.toString()),
-                onChanged: (v) => setState(() => shiftsPerDay = int.tryParse(v) ?? 3),
+                controller:
+                    TextEditingController(text: shiftsPerDay.toString()),
+                onChanged: (v) =>
+                    setState(() => shiftsPerDay = int.tryParse(v) ?? 3),
               )),
               const SizedBox(width: 16),
-              Expanded(child: StyledTextField(
+              Expanded(
+                  child: StyledTextField(
                 label: 'Spindle cost /spindle/shift',
                 isNumber: true,
-                controller: TextEditingController(text: spindleCostPerShift.toStringAsFixed(2)),
-                onChanged: (v) => setState(() => spindleCostPerShift = double.tryParse(v) ?? 15.5),
+                controller: TextEditingController(
+                    text: spindleCostPerShift.toStringAsFixed(2)),
+                onChanged: (v) => setState(
+                    () => spindleCostPerShift = double.tryParse(v) ?? 15.5),
               )),
               const Spacer(flex: 2),
             ],
@@ -338,9 +649,11 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
               ],
               rows: counts.map((c) {
                 int totalSpindles = c.frames * c.spindlesPerFrame;
-                double lbsFrameDay = c.spindlesPerFrame * (c.ops / 16) * shiftsPerDay;
+                double lbsFrameDay =
+                    c.spindlesPerFrame * (c.ops / 16) * shiftsPerDay;
                 double lbsDay = c.frames * lbsFrameDay;
-                double makingCostDay = spindleCostPerShift * totalSpindles * shiftsPerDay;
+                double makingCostDay =
+                    spindleCostPerShift * totalSpindles * shiftsPerDay;
                 double makingLb = lbsDay > 0 ? makingCostDay / lbsDay : 0;
 
                 return DataRow(cells: [
@@ -366,18 +679,22 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
                   )),
                   DataCell(TextFormField(
                     initialValue: c.ops.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (v) => setState(() => c.ops = double.tryParse(v) ?? 0),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (v) =>
+                        setState(() => c.ops = double.tryParse(v) ?? 0),
                   )),
                   DataCell(TextFormField(
                     initialValue: c.frames.toString(),
                     keyboardType: TextInputType.number,
-                    onChanged: (v) => setState(() => c.frames = int.tryParse(v) ?? 0),
+                    onChanged: (v) =>
+                        setState(() => c.frames = int.tryParse(v) ?? 0),
                   )),
                   DataCell(TextFormField(
                     initialValue: c.spindlesPerFrame.toString(),
                     keyboardType: TextInputType.number,
-                    onChanged: (v) => setState(() => c.spindlesPerFrame = int.tryParse(v) ?? 0),
+                    onChanged: (v) => setState(
+                        () => c.spindlesPerFrame = int.tryParse(v) ?? 0),
                   )),
                   DataCell(Text(totalSpindles.toString())),
                   DataCell(Text(lbsFrameDay.toStringAsFixed(2))),
@@ -396,7 +713,8 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
           ElevatedButton.icon(
             icon: const Icon(Icons.add),
             label: const Text('Add count'),
-            onPressed: () => setState(() => counts.add(CountRow('New', 'Combed', 'Export', 0, 0, 0, 0))),
+            onPressed: () => setState(() =>
+                counts.add(CountRow('New', 'Combed', 'Export', 0, 0, 0, 0))),
           ),
         ],
       ),
@@ -413,8 +731,10 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       for (var c in cottons) {
         double w = c.percentage / 100;
         avgComberNoil += (c.cdYield - c.cmYield) * w;
-        double costCd = (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
-        double costCm = (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
+        double costCd =
+            (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
+        double costCm =
+            (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
         avgCostLbCd += costCd * w;
         avgCostLbCm += costCm * w;
       }
@@ -449,14 +769,19 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
               ],
               rows: counts.map((c) {
                 int totalSpindles = c.frames * c.spindlesPerFrame;
-                double lbsFrameDay = c.spindlesPerFrame * (c.ops / 16) * shiftsPerDay;
+                double lbsFrameDay =
+                    c.spindlesPerFrame * (c.ops / 16) * shiftsPerDay;
                 double lbsDay = c.frames * lbsFrameDay;
-                double makingCostDay = spindleCostPerShift * totalSpindles * shiftsPerDay;
+                double makingCostDay =
+                    spindleCostPerShift * totalSpindles * shiftsPerDay;
                 double makingLb = lbsDay > 0 ? makingCostDay / lbsDay : 0;
 
-                double rawMatLb = c.blend == 'Combed' ? netCombedCostLb : avgCostLbCd;
+                double rawMatLb =
+                    c.blend == 'Combed' ? netCombedCostLb : avgCostLbCd;
                 double totalMakRaw = makingLb + rawMatLb;
-                double packingLb = c.channel == 'Export' ? exportPackingRateLb : localPackingRateLb;
+                double packingLb = c.channel == 'Export'
+                    ? exportPackingRateLb
+                    : localPackingRateLb;
                 double grandTotal = totalMakRaw + packingLb;
 
                 double diffLb = c.saleLb - grandTotal;
@@ -474,15 +799,26 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
                   DataCell(Text(grandTotal.toStringAsFixed(4))),
                   DataCell(TextFormField(
                     initialValue: c.saleLb.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (v) => setState(() => c.saleLb = double.tryParse(v) ?? 0),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (v) =>
+                        setState(() => c.saleLb = double.tryParse(v) ?? 0),
                   )),
-                  DataCell(Text(diffLb.toStringAsFixed(4), style: TextStyle(color: diffLb >= 0 ? SpinColors.successGreen : SpinColors.errorRed))),
-                  DataCell(Text(diffTotal.toStringAsFixed(2), style: TextStyle(color: diffTotal >= 0 ? SpinColors.successGreen : SpinColors.errorRed))),
+                  DataCell(Text(diffLb.toStringAsFixed(4),
+                      style: TextStyle(
+                          color: diffLb >= 0
+                              ? SpinColors.successGreen
+                              : SpinColors.errorRed))),
+                  DataCell(Text(diffTotal.toStringAsFixed(2),
+                      style: TextStyle(
+                          color: diffTotal >= 0
+                              ? SpinColors.successGreen
+                              : SpinColors.errorRed))),
                 ]);
-              }).toList()..add(
-                DataRow(cells: [
-                  const DataCell(Text('Profit-Loss Per Day', style: TextStyle(fontWeight: FontWeight.bold))),
+              }).toList()
+                ..add(DataRow(cells: [
+                  const DataCell(Text('Profit-Loss Per Day',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
                   const DataCell(Text('')),
                   const DataCell(Text('')),
                   const DataCell(Text('')),
@@ -492,9 +828,13 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
                   const DataCell(Text('')),
                   const DataCell(Text('')),
                   const DataCell(Text('')),
-                  DataCell(Text(totalDiffTotal.toStringAsFixed(2), style: TextStyle(fontWeight: FontWeight.bold, color: totalDiffTotal >= 0 ? SpinColors.successGreen : SpinColors.errorRed))),
-                ])
-              ),
+                  DataCell(Text(totalDiffTotal.toStringAsFixed(2),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: totalDiffTotal >= 0
+                              ? SpinColors.successGreen
+                              : SpinColors.errorRed))),
+                ])),
             ),
           ),
         ],
@@ -504,7 +844,7 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
 
   Widget _buildSection5() {
     double totalDiffTotal = 0;
-    
+
     // Recalculate diff total again...
     double totalPct = cottons.fold(0, (sum, c) => sum + c.percentage);
     double avgCostLbCd = 0;
@@ -515,8 +855,10 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
       for (var c in cottons) {
         double w = c.percentage / 100;
         avgComberNoil += (c.cdYield - c.cmYield) * w;
-        double costCd = (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
-        double costCm = (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
+        double costCd =
+            (c.cdYield > 0) ? (c.rateKg / 2.20462) / (c.cdYield / 100) : 0;
+        double costCm =
+            (c.cmYield > 0) ? (c.rateKg / 2.20462) / (c.cmYield / 100) : 0;
         avgCostLbCd += costCd * w;
         avgCostLbCm += costCm * w;
       }
@@ -535,7 +877,8 @@ class _ProfitLossScreenState extends State<ProfitLossScreen> {
 
       double rawMatLb = c.blend == 'Combed' ? netCombedCostLb : avgCostLbCd;
       double totalMakRaw = makingLb + rawMatLb;
-      double packingLb = c.channel == 'Export' ? exportPackingRateLb : localPackingRateLb;
+      double packingLb =
+          c.channel == 'Export' ? exportPackingRateLb : localPackingRateLb;
       double grandTotal = totalMakRaw + packingLb;
 
       double diffLb = c.saleLb - grandTotal;

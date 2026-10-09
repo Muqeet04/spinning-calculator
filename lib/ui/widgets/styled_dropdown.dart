@@ -30,6 +30,7 @@ class StyledDropdown<T> extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
+          isExpanded: true,
           initialValue: value,
           items: items,
           onChanged: onChanged,
