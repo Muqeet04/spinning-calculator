@@ -118,25 +118,64 @@ class PageScaffold extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                subtitle!,
-                style: const TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 16,
+            if (title == 'Spin Logic') ...[
+              const SizedBox(height: 12),
+              Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 100,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.change_history,
+                        size: 70,
+                        color: SpinColors.amber,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.lightBlueAccent,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ]
+            ] else ...[
+              const SizedBox(height: 24),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    color: Colors.lightBlueAccent,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ],
           ],
         ),
       ),

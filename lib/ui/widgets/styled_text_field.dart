@@ -8,6 +8,9 @@ class StyledTextField extends StatelessWidget {
   final bool isNumber;
   final String? errorText;
   final TextEditingController? controller;
+  final String? initialValue;
+  final TextInputType? keyboardType;
+  final bool enabled;
 
   const StyledTextField({
     super.key,
@@ -16,6 +19,9 @@ class StyledTextField extends StatelessWidget {
     this.isNumber = false,
     this.errorText,
     this.controller,
+    this.initialValue,
+    this.keyboardType,
+    this.enabled = true,
   });
 
   @override
@@ -32,12 +38,15 @@ class StyledTextField extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
+          initialValue: controller == null ? initialValue : null,
+          enabled: enabled,
           onChanged: onChanged,
-          keyboardType: isNumber
-              ? const TextInputType.numberWithOptions(decimal: true)
-              : TextInputType.text,
+          keyboardType: keyboardType ??
+              (isNumber
+                  ? const TextInputType.numberWithOptions(decimal: true)
+                  : TextInputType.text),
           inputFormatters: isNumber
               ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
               : null,

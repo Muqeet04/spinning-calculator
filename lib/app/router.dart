@@ -5,7 +5,11 @@ import '../ui/screens/pressure_conversion_screen.dart';
 import '../ui/screens/humidity_screen.dart';
 import '../ui/screens/ring_doff_screen.dart';
 import '../ui/screens/production_screen.dart';
-import '../ui/screens/placeholder_screen.dart';
+import '../ui/screens/new_mills_plan_screen.dart';
+import '../ui/screens/spin_plan_screen.dart';
+import '../ui/screens/profit_loss_screen.dart';
+import '../ui/screens/blow_room_waste_screen.dart';
+import '../ui/screens/target_feasibility_screen.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -36,23 +40,23 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/blow-room-waste',
-      builder: (context, state) => const PlaceholderScreen(title: 'Blow Room & Card Waste'),
+      builder: (context, state) => const BlowRoomWasteScreen(),
     ),
     GoRoute(
       path: '/target-feasibility',
-      builder: (context, state) => const PlaceholderScreen(title: 'Target Count Feasibility'),
+      builder: (context, state) => const TargetFeasibilityScreen(),
     ),
     GoRoute(
       path: '/profit-loss',
-      builder: (context, state) => const PlaceholderScreen(title: 'Profit/Loss Calculations'),
+      builder: (context, state) => const ProfitLossScreen(),
     ),
     GoRoute(
       path: '/new-mills-plan',
-      builder: (context, state) => const PlaceholderScreen(title: 'New Mills Plan'),
+      builder: (context, state) => const NewMillsPlanScreen(),
     ),
     GoRoute(
       path: '/spin-plan',
-      builder: (context, state) => const PlaceholderScreen(title: 'Spin Plan (auto-balance)'),
+      builder: (context, state) => const SpinPlanScreen(),
     ),
   ],
 );

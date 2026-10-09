@@ -13,6 +13,50 @@ class HomeScreen extends StatelessWidget {
       subtitle: 'Plan, balance and cost your spinning mill, from blow room to winding.',
       child: Column(
         children: [
+          // User Card matching ref video
+          Container(
+            margin: const EdgeInsets.only(bottom: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: SpinColors.cardWhite,
+              borderRadius: BorderRadius.circular(12),
+              border: const Border(left: BorderSide(color: Color(0xFF3B82F6), width: 4)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.person, color: Color(0xFF2563EB), size: 22),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Muqeet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: SpinColors.navyDark)),
+                        Text('XYZ · xyz', style: TextStyle(fontSize: 12, color: SpinColors.textGrey)),
+                      ],
+                    ),
+                  ],
+                ),
+                OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    side: BorderSide(color: SpinColors.textGrey.withValues(alpha: 0.3)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Switch user', style: TextStyle(fontSize: 13, color: SpinColors.textGrey)),
+                ),
+              ],
+            ),
+          ),
           LayoutBuilder(
             builder: (context, constraints) {
               int crossAxisCount = constraints.maxWidth > 800 ? 2 : 1;

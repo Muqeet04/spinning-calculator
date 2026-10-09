@@ -11,6 +11,7 @@ class SpinColors {
   static const textGrey = Color(0xFF6B7280);
   static const errorRed = Color(0xFFDC2626);
   static const successGreen = Color(0xFF16A34A);
+  static const bodyText = Color(0xFF18214F);
 }
 
 class SpinLogicTheme {
