@@ -3,6 +3,8 @@ name: Build Android APK & Release
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -27,27 +29,30 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.47.7'
           cache: true
 
       - name: Accept Android Licenses
         run: yes | flutter doctor --android-licenses || true
 
       - name: Get Dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Run Tests
-        run: flutter test
+        run: flutter test --no-pub
 
       - name: Build Universal Android APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --no-pub --no-tree-shake-icons
 
       - name: Upload Universal APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MM-spinning-calculator-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
       - name: Create or Update GitHub Release with APK
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0

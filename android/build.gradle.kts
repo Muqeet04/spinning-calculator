@@ -20,17 +20,6 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-subprojects {
-    configurations.all {
-        resolutionStrategy {
-            force("androidx.core:core:1.13.1")
-            force("androidx.core:core-ktx:1.13.1")
-            force("androidx.arch.core:core-runtime:2.2.0")
-            force("androidx.annotation:annotation:1.8.0")
-        }
-    }
-}
-
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
