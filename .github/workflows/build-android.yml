@@ -1,0 +1,74 @@
+name: Build Android APK & Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build Android Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java Development Kit (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Run Tests
+        run: flutter test
+
+      - name: Build Android Release APK
+        run: flutter build apk --release --split-per-abi
+
+      - name: Build Universal Android APK
+        run: flutter build apk --release
+
+      - name: Upload Universal APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spin-logic-universal-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Split ABI APKs Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spin-logic-split-apks
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0
+          name: "Spin Logic v1.0.0 Release"
+          body: |
+            ## Spin Logic - Textile Mill Calculator Suite v1.0.0
+            
+            ### Included in this release:
+            - **Universal Android APK (`app-release.apk`)**: Ready to install on any Android phone or tablet.
+            - **All 10 Calculation Modules**: Complete from Blow Room to Winding.
+            - **Full Offline Functionality**: No login required.
+            
+            ### Installation on Android:
+            1. Download `app-release.apk` directly to your phone.
+            2. Tap the downloaded file to install (allow "Install unknown apps" if prompted).
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            Spin_Logic_User_Guide.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
