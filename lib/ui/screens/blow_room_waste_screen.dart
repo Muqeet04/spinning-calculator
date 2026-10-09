@@ -6,6 +6,7 @@ import '../widgets/input_card.dart';
 import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class CottonRow {
   String name;
@@ -305,7 +306,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                ResponsiveRow(
                   children: [
                     Expanded(
                       child: StyledTextField(
@@ -327,8 +328,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                ResponsiveTable(
                   child: DataTable(
                     columnSpacing: 16,
                     columns: const [
@@ -435,9 +435,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                       'Blend2 % must total 100% (currently ${_totalBlend2.toStringAsFixed(2)}%)',
                       style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     ResultTile(
                         label: 'Overall yield %',
@@ -455,9 +453,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     SizedBox(
                         width: 150,
@@ -499,9 +495,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     ResultTile(
                         label: 'Non-useable total',
@@ -523,9 +517,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     SizedBox(
                         width: 150,
@@ -551,9 +543,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                         style: TextStyle(color: Colors.red)),
                   ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     ResultTile(
                         label: 'Waste %',
@@ -584,9 +574,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                   label: const Text('Use blow room output as feed'),
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     SizedBox(
                         width: 150,
@@ -613,9 +601,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
                         style: TextStyle(color: Colors.red)),
                   ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     ResultTile(
                         label: 'Waste %',
@@ -633,9 +619,7 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
           ),
           InputCard(
             title: 'Combined (blow room → card)',
-            child: Wrap(
-              spacing: 16,
-              runSpacing: 16,
+            child: ResponsiveResults(
               children: [
                 ResultTile(
                     label: 'Combined yield %',

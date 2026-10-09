@@ -9,6 +9,7 @@ import 'package:spin_logic/ui/widgets/result_tile.dart';
 import 'package:spin_logic/ui/widgets/styled_dropdown.dart';
 import 'package:spin_logic/ui/widgets/styled_text_field.dart';
 import 'package:spin_logic/ui/widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class CountConversionScreen extends StatefulWidget {
   const CountConversionScreen({super.key});
@@ -172,9 +173,7 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
   }
 
   Widget _buildResultTiles(Map<String, double> results) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
+    return ResponsiveResults(
       children: _countUnits.map((unit) {
         final val = results[unit];
         String? displayValue;
@@ -283,7 +282,7 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                ResponsiveRow(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -372,7 +371,7 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                   onChanged: _onSampleLengthSelected,
                 ),
                 const SizedBox(height: 16),
-                Row(
+                ResponsiveRow(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -425,7 +424,7 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
+                ResponsiveRow(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(

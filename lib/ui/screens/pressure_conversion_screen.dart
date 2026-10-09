@@ -8,6 +8,7 @@ import 'package:spin_logic/ui/widgets/pdf_report_helpers.dart';
 import 'package:spin_logic/ui/widgets/result_tile.dart';
 import 'package:spin_logic/ui/widgets/styled_dropdown.dart';
 import 'package:spin_logic/ui/widgets/styled_text_field.dart';
+import '../widgets/responsive_layout.dart';
 
 class PressureConversionScreen extends StatefulWidget {
   const PressureConversionScreen({super.key});
@@ -99,7 +100,7 @@ class _PressureConversionScreenState extends State<PressureConversionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                ResponsiveRow(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -142,9 +143,7 @@ class _PressureConversionScreenState extends State<PressureConversionScreen> {
                   ),
                 ],
                 const SizedBox(height: 24),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: _units.map((unit) {
                     final val = _results[unit];
                     String? displayValue;

@@ -8,6 +8,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class TargetFeasibilityScreen extends StatefulWidget {
   const TargetFeasibilityScreen({super.key});
@@ -219,9 +220,7 @@ class _TargetFeasibilityScreenState extends State<TargetFeasibilityScreen> {
           const SizedBox(height: 16),
           InputCard(
             title: 'Inputs',
-            child: Wrap(
-              spacing: 16,
-              runSpacing: 16,
+            child: ResponsiveResults(
               children: [
                 SizedBox(
                   width: 150,
@@ -312,9 +311,7 @@ class _TargetFeasibilityScreenState extends State<TargetFeasibilityScreen> {
                     value: _spinnabilityAssessment,
                     highlight: true),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+                ResponsiveResults(
                   children: [
                     ResultTile(
                         label: 'Practical count range',

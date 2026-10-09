@@ -8,6 +8,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class RingDoffScreen extends StatefulWidget {
   const RingDoffScreen({super.key});
@@ -306,7 +307,8 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
       subtitle:
           'Ring doff time, roving packages consumed per day/shift/doff, OPS and yarn production',
       onGeneratePdfReport: _buildPdfReport,
-      child: Row(
+      child: ResponsiveRow(
+        breakpoint: 900,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -454,13 +456,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                   ),
                 InputCard(
                   title: 'Ring doff time calculation',
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 2.5,
+                  child: ResponsiveResults(
                     children: [
                       ResultTile(
                           label: 'Ring doff time (min)',
@@ -497,13 +493,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                 const SizedBox(height: 24),
                 InputCard(
                   title: 'Roving consumption per day',
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 2.5,
+                  child: ResponsiveResults(
                     children: [
                       ResultTile(
                           label: 'Time to consume one roving (hours)',
@@ -519,13 +509,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                 const SizedBox(height: 24),
                 InputCard(
                   title: 'Intermediate calculations',
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 2.5,
+                  child: ResponsiveResults(
                     children: [
                       ResultTile(
                           label: 'TM', value: _result?.tm.toStringAsFixed(2)),

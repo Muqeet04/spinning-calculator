@@ -6,236 +6,269 @@ import '../widgets/page_scaffold.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  static const _modules = [
+    (
+      Icons.factory_outlined,
+      'Production Calculation',
+      'Carding, draw frame, comber, simplex, ring frame, winding',
+      '/production',
+    ),
+    (
+      Icons.swap_horiz,
+      'Count Conversion',
+      'Ne, Nm, Tex, Denier — convert between yarn count systems',
+      '/count-conversion',
+    ),
+    (
+      Icons.cleaning_services_outlined,
+      'Blow Room & Card Waste',
+      'Waste %, lap/sliver output, combined process loss',
+      '/blow-room-waste',
+    ),
+    (
+      Icons.payments_outlined,
+      'Profit/Loss Calculations',
+      'Cotton blend table, spindle-cost & per-count cost',
+      '/profit-loss',
+    ),
+    (
+      Icons.speed,
+      'Pressure Conversion',
+      'Bar, PSI, kg/cm², kPa, mmHg, atm conversions',
+      '/pressure-conversion',
+    ),
+    (
+      Icons.water_drop_outlined,
+      'Relative Humidity Calculator',
+      'Dry & wet bulb to RH% psychrometer reading',
+      '/humidity',
+    ),
+    (
+      Icons.flag_outlined,
+      'Target Count Feasibility',
+      'Screen a cotton lot against a target Ne count',
+      '/target-feasibility',
+    ),
+    (
+      Icons.autorenew,
+      'Ring Doff & Roving Consumption',
+      'Doff time, roving packages, OPS from yarn count',
+      '/ring-doff',
+    ),
+    (
+      Icons.warehouse_outlined,
+      'New Mills Plan',
+      'Bags required to blow room lines, cards & simplex machines',
+      '/new-mills-plan',
+    ),
+    (
+      Icons.balance,
+      'Spin Plan (auto-balance)',
+      'Auto-balance every department from ring frame',
+      '/spin-plan',
+    ),
+  ];
+
   @override
-  Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'MM spinning calculator',
-      subtitle: 'Complete 10-module engineering, plant balancing, and costing suite for spinning mills.',
-      child: Column(
-        children: [
-          // Owner & Creator Profile Card
-          Container(
-            margin: const EdgeInsets.only(bottom: 28),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              color: SpinColors.cardWhite,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: SpinColors.borderLight, width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [SpinColors.royalBlue, SpinColors.emerald],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: SpinColors.royalBlue.withValues(alpha: 0.25),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+  Widget build(BuildContext context) => PageScaffold(
+    title: 'MM spinning calculator',
+    subtitle:
+        'Complete 10-module engineering, plant balancing, and costing suite for spinning mills.',
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: _cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [SpinColors.royalBlue, SpinColors.emerald],
                       ),
-                      alignment: Alignment.center,
-                      child: const Text(
+                      shape: BoxShape.circle,
+                    ),
+                    child: const FittedBox(
+                      child: Text(
                         'MM',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    const Column(
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          spacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text(
                               'Muqeet Mahmood',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
-                                color: SpinColors.textPrimary,
-                                letterSpacing: -0.2,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(Icons.verified, color: SpinColors.royalBlue, size: 16),
+                            Icon(
+                              Icons.verified,
+                              color: SpinColors.royalBlue,
+                              size: 16,
+                            ),
                           ],
                         ),
-                        SizedBox(height: 3),
+                        SizedBox(height: 4),
                         Text(
-                          'muqeetmahmood8@gmail.com • Lead Engineer & Owner',
+                          'muqeetmahmood8@gmail.com',
                           style: TextStyle(
-                            fontSize: 12.5,
                             color: SpinColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Lead Engineer & Owner',
+                          style: TextStyle(
+                            color: SpinColors.textSecondary,
+                            fontSize: 13,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: SpinColors.emeraldGlow,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: SpinColors.emerald.withValues(alpha: 0.3)),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: SpinColors.emerald, size: 14),
-                      SizedBox(width: 5),
-                      Text(
-                        'Active & Offline',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: SpinColors.emerald,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              int crossAxisCount = constraints.maxWidth > 800 ? 2 : 1;
-              return GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 18,
-                mainAxisSpacing: 18,
-                childAspectRatio: crossAxisCount == 2 ? 3.6 : 2.5,
-                children: [
-                  _buildModuleCard(context, '🏭', 'Production Calculation', 'Carding, draw frame, comber, simplex, ring frame, winding', '/production'),
-                  _buildModuleCard(context, '🔄', 'Count Conversion', 'Ne, Nm, Tex, Denier — convert between yarn count systems', '/count-conversion'),
-                  _buildModuleCard(context, '🧹', 'Blow Room & Card Waste', 'Waste %, lap/sliver output, combined process loss', '/blow-room-waste'),
-                  _buildModuleCard(context, '💰', 'Profit/Loss Calculations', 'Cotton blend table, spindle-cost & per-count cost', '/profit-loss'),
-                  _buildModuleCard(context, '🔧', 'Pressure Conversion', 'Bar, PSI, kg/cm², kPa, mmHg, atm conversions', '/pressure-conversion'),
-                  _buildModuleCard(context, '💧', 'Relative Humidity Calculator', 'Dry & wet bulb to RH% psychrometer reading', '/humidity'),
-                  _buildModuleCard(context, '🎯', 'Target Count Feasibility', 'Screen a cotton lot against a target Ne count', '/target-feasibility'),
-                  _buildModuleCard(context, '🧶', 'Ring Doff & Roving Consumption', 'Doff time, roving packages, OPS from yarn count', '/ring-doff'),
-                  _buildModuleCard(context, '🏗️', 'New Mills Plan', 'Bags required to blow room lines, cards & simplex machines', '/new-mills-plan'),
-                  _buildModuleCard(context, '⚖️', 'Spin Plan (auto-balance)', 'Auto-balance every department from ring frame', '/spin-plan'),
                 ],
-              );
-            },
-          ),
-          const SizedBox(height: 44),
-          // Creator Ownership Footer
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              color: SpinColors.coolGreyBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: SpinColors.borderLight),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.copyright, size: 14, color: SpinColors.textSecondary),
-                SizedBox(width: 6),
-                Text(
-                  'MM spinning calculator • Designed & Engineered by Muqeet Mahmood (muqeetmahmood8@gmail.com)',
-                  style: TextStyle(
-                    color: SpinColors.textSecondary,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 14),
+              const Wrap(
+                spacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Icon(Icons.check_circle, color: SpinColors.emerald, size: 18),
+                  Text(
+                    'Active & Offline',
+                    style: TextStyle(
+                      color: SpinColors.emerald,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+            final columns = constraints.maxWidth > 800 * scale.clamp(1, 1.5)
+                ? 2
+                : 1;
+            final width = (constraints.maxWidth - 18 * (columns - 1)) / columns;
+            return Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              children: [
+                for (final module in _modules)
+                  SizedBox(
+                    width: width,
+                    child: _buildModuleCard(context, module),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: _cardDecoration(),
+          child: const Text(
+            '© MM spinning calculator • Designed & Engineered by Muqeet Mahmood (muqeetmahmood8@gmail.com)',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: SpinColors.textSecondary, fontSize: 13),
+          ),
+        ),
+      ],
+    ),
+  );
 
-  Widget _buildModuleCard(BuildContext context, String icon, String title, String description, String route) {
-    return InkWell(
-      onTap: () => context.go(route),
+  BoxDecoration _cardDecoration() => BoxDecoration(
+    color: SpinColors.cardWhite,
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(color: SpinColors.borderLight),
+  );
+
+  Widget _buildModuleCard(
+    BuildContext context,
+    (IconData, String, String, String) module,
+  ) => Material(
+    color: SpinColors.cardWhite,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: const BorderSide(color: SpinColors.borderLight),
+    ),
+    child: InkWell(
+      onTap: () => context.go(module.$4),
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        decoration: BoxDecoration(
-          color: SpinColors.cardWhite,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: SpinColors.borderLight, width: 1.1),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        constraints: const BoxConstraints(minHeight: 112),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: SpinColors.coolGreyBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: SpinColors.borderLight),
               ),
-              alignment: Alignment.center,
-              child: Text(icon, style: const TextStyle(fontSize: 22)),
+              child: Icon(module.$1, color: SpinColors.royalBlue, size: 24),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    title,
+                    module.$2,
                     style: const TextStyle(
-                      color: SpinColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    description,
-                    style: const TextStyle(color: SpinColors.textSecondary, fontSize: 12.5),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    module.$3,
+                    style: const TextStyle(
+                      color: SpinColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            const Icon(Icons.arrow_forward_ios, color: SpinColors.textSecondary, size: 14),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.chevron_right,
+              color: SpinColors.textSecondary,
+              size: 20,
+            ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }

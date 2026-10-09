@@ -8,6 +8,7 @@ import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
 import '../../app/theme.dart';
+import '../widgets/responsive_layout.dart';
 
 class SpinPlanScreen extends ConsumerStatefulWidget {
   const SpinPlanScreen({super.key});
@@ -336,8 +337,7 @@ class _SpinPlanScreenState extends ConsumerState<SpinPlanScreen> {
             title: '1. Ring frames count-wise',
             child: Column(
               children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                ResponsiveTable(
                   child: DataTable(
                     columns: const [
                       DataColumn(label: Text('Count')),
@@ -370,9 +370,7 @@ class _SpinPlanScreenState extends ConsumerState<SpinPlanScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                const ResponsiveResults(
                   children: [
                     ResultTile(label: 'Combed bags/day', value: '100'),
                     ResultTile(label: 'Carded bags/day', value: '0'),
@@ -442,8 +440,7 @@ class _SpinPlanScreenState extends ConsumerState<SpinPlanScreen> {
           const SizedBox(height: 16),
           InputCard(
             title: '3. Balanced plan by department',
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            child: ResponsiveTable(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('Department')),

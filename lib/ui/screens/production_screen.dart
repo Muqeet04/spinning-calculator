@@ -7,6 +7,7 @@ import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
 import '../widgets/pdf_report_helpers.dart';
+import '../widgets/responsive_layout.dart';
 
 class ProductionScreen extends StatefulWidget {
   const ProductionScreen({super.key});
@@ -353,7 +354,8 @@ class _ProductionScreenState extends State<ProductionScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
+          ResponsiveRow(
+            breakpoint: 900,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
@@ -398,7 +400,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
     Widget rowOf(List<Widget> children) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16.0),
-        child: Row(children: children),
+        child: ResponsiveRow(children: children),
       );
     }
 
@@ -648,9 +650,7 @@ class _ProductionScreenState extends State<ProductionScreen> {
       ];
     }
 
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
+    return ResponsiveResults(
       children: tiles,
     );
   }

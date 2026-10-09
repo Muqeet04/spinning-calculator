@@ -55,13 +55,14 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: "MM spinning calculator v1.0.0 Release"
+          tag_name: v1.0.1
+          name: "MM spinning calculator v1.0.1 Release"
           body: |
-            ## MM spinning calculator v1.0.0
+            ## MM spinning calculator v1.0.1
             **Owner & Lead Engineer**: Muqeet Mahmood (muqeetmahmood8@gmail.com)
             
             ### Included in this release:
+            - **Mobile layouts**: Stacked phone inputs and results, accessible header actions, scrollable tables, and support for larger text.
             - **Universal Android APK (`app-release.apk`)**: Full offline spinning mill calculator for any Android device.
             - **All 10 Calculation Modules**: Complete from Blow Room to Winding.
             - **User Guide (`Spin_Logic_User_Guide.pdf`)**: Functional manual for website and app.
