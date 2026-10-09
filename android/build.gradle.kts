@@ -21,9 +21,12 @@ subprojects {
 }
 
 subprojects {
-    project.plugins.withId("com.android.library") {
-        project.extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)?.apply {
-            compileSdk = 36
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.core:core:1.13.1")
+            force("androidx.core:core-ktx:1.13.1")
+            force("androidx.arch.core:core-runtime:2.2.0")
+            force("androidx.annotation:annotation:1.8.0")
         }
     }
 }
