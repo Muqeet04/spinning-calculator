@@ -61,8 +61,8 @@ class _TargetFeasibilityScreenState extends State<TargetFeasibilityScreen> {
     return PageScaffold(
       title: 'Target count feasibility',
       subtitle: 'Screen a cotton lot against a target Ne count and get a practical trial recommendation.',
-      child: ListView(
-        padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
             padding: const EdgeInsets.all(16.0),

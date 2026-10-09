@@ -122,8 +122,8 @@ class _BlowRoomWasteScreenState extends State<BlowRoomWasteScreen> {
     return PageScaffold(
       title: 'Blow room & card waste calculator',
       subtitle: 'Waste %, lap/sliver output and combined process loss',
-      child: ListView(
-        padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           InputCard(
             title: 'Cotton mixing, yield & waste',
