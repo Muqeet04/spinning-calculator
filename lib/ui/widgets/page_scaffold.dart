@@ -58,6 +58,7 @@ class PageScaffold extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isHome = title == 'MM spinning calculator' || title == 'Spin Logic';
     return Container(
       decoration: const BoxDecoration(
         color: SpinColors.royalNavy,
@@ -107,7 +108,7 @@ class PageScaffold extends StatelessWidget {
                 ),
               ],
             ),
-            if (title == 'Spin Logic') ...[
+            if (isHome) ...[
               const SizedBox(height: 16),
               Center(
                 child: Column(
@@ -124,9 +125,10 @@ class PageScaffold extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       title,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 30,
+                        fontSize: 32,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                       ),

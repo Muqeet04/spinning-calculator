@@ -1,11 +1,11 @@
 {
-    "name": "spin_logic",
-    "short_name": "spin_logic",
+    "name": "MM spinning calculator",
+    "short_name": "MM Spinning",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0F172A",
+    "theme_color": "#1D4ED8",
+    "description": "MM spinning calculator by Muqeet Mahmood (muqeetmahmood8@gmail.com)",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

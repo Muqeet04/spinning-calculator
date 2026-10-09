@@ -9,23 +9,23 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PageScaffold(
-      title: 'Spin Logic',
-      subtitle: 'Textile spinning mill engineering, balancing, and profitability calculation suite.',
+      title: 'MM spinning calculator',
+      subtitle: 'Complete 10-module engineering, plant balancing, and costing suite for spinning mills.',
       child: Column(
         children: [
-          // Sleek Corporate User Card
+          // Owner & Creator Profile Card
           Container(
             margin: const EdgeInsets.only(bottom: 28),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: SpinColors.cardWhite,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: SpinColors.borderLight),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: SpinColors.borderLight, width: 1.2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -35,37 +35,85 @@ class HomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: SpinColors.royalBlue.withValues(alpha: 0.08),
+                        gradient: const LinearGradient(
+                          colors: [SpinColors.royalBlue, SpinColors.emerald],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         shape: BoxShape.circle,
-                        border: Border.all(color: SpinColors.royalBlue.withValues(alpha: 0.2)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: SpinColors.royalBlue.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.person, color: SpinColors.royalBlue, size: 20),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'MM',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Muqeet', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: SpinColors.textPrimary)),
-                        Text('Textile Operations · Online / Offline Active', style: TextStyle(fontSize: 12, color: SpinColors.textSecondary)),
+                        Row(
+                          children: [
+                            Text(
+                              'Muqeet Mahmood',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: SpinColors.textPrimary,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.verified, color: SpinColors.royalBlue, size: 16),
+                          ],
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'muqeetmahmood8@gmail.com • Lead Engineer & Owner',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: SpinColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: SpinColors.emeraldGlow,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: SpinColors.emerald.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.check_circle, color: SpinColors.emerald, size: 12),
-                      SizedBox(width: 4),
-                      Text('Offline Ready', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: SpinColors.emerald)),
+                      Icon(Icons.check_circle, color: SpinColors.emerald, size: 14),
+                      SizedBox(width: 5),
+                      Text(
+                        'Active & Offline',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: SpinColors.emerald,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -97,17 +145,30 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 48),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.shield_outlined, size: 14, color: SpinColors.textSecondary),
-              SizedBox(width: 6),
-              Text(
-                'Spin Logic v1.0 • Verified offline mathematical precision',
-                style: TextStyle(color: SpinColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
-              ),
-            ],
+          const SizedBox(height: 44),
+          // Creator Ownership Footer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: SpinColors.coolGreyBg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: SpinColors.borderLight),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.copyright, size: 14, color: SpinColors.textSecondary),
+                SizedBox(width: 6),
+                Text(
+                  'MM spinning calculator • Designed & Engineered by Muqeet Mahmood (muqeetmahmood8@gmail.com)',
+                  style: TextStyle(
+                    color: SpinColors.textSecondary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

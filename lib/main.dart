@@ -4,16 +4,16 @@ import 'app/router.dart';
 import 'app/theme.dart';
 
 void main() {
-  runApp(const ProviderScope(child: SpinLogicApp()));
+  runApp(const ProviderScope(child: MMSpinningCalculatorApp()));
 }
 
-class SpinLogicApp extends StatelessWidget {
-  const SpinLogicApp({super.key});
+class MMSpinningCalculatorApp extends StatelessWidget {
+  const MMSpinningCalculatorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Spin Logic',
+      title: 'MM spinning calculator',
       theme: SpinLogicTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
