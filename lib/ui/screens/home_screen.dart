@@ -10,21 +10,21 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageScaffold(
       title: 'Spin Logic',
-      subtitle: 'Plan, balance and cost your spinning mill, from blow room to winding.',
+      subtitle: 'Textile spinning mill engineering, balancing, and profitability calculation suite.',
       child: Column(
         children: [
-          // User Card matching ref video
+          // Sleek Corporate User Card
           Container(
-            margin: const EdgeInsets.only(bottom: 24),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            margin: const EdgeInsets.only(bottom: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               color: SpinColors.cardWhite,
               borderRadius: BorderRadius.circular(12),
-              border: const Border(left: BorderSide(color: Color(0xFF3B82F6), width: 4)),
+              border: Border.all(color: SpinColors.borderLight),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -32,27 +32,42 @@ class HomeScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.person, color: Color(0xFF2563EB), size: 22),
-                    SizedBox(width: 10),
-                    Column(
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: SpinColors.royalBlue.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: SpinColors.royalBlue.withValues(alpha: 0.2)),
+                      ),
+                      child: const Icon(Icons.person, color: SpinColors.royalBlue, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Muqeet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: SpinColors.navyDark)),
-                        Text('XYZ · xyz', style: TextStyle(fontSize: 12, color: SpinColors.textGrey)),
+                        Text('Muqeet', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: SpinColors.textPrimary)),
+                        Text('Textile Operations · Online / Offline Active', style: TextStyle(fontSize: 12, color: SpinColors.textSecondary)),
                       ],
                     ),
                   ],
                 ),
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    side: BorderSide(color: SpinColors.textGrey.withValues(alpha: 0.3)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: SpinColors.emeraldGlow,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: SpinColors.emerald.withValues(alpha: 0.3)),
                   ),
-                  child: const Text('Switch user', style: TextStyle(fontSize: 13, color: SpinColors.textGrey)),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: SpinColors.emerald, size: 12),
+                      SizedBox(width: 4),
+                      Text('Offline Ready', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: SpinColors.emerald)),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -64,9 +79,9 @@ class HomeScreen extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 24,
-                mainAxisSpacing: 24,
-                childAspectRatio: crossAxisCount == 2 ? 3.5 : 2.5,
+                crossAxisSpacing: 18,
+                mainAxisSpacing: 18,
+                childAspectRatio: crossAxisCount == 2 ? 3.6 : 2.5,
                 children: [
                   _buildModuleCard(context, '🏭', 'Production Calculation', 'Carding, draw frame, comber, simplex, ring frame, winding', '/production'),
                   _buildModuleCard(context, '🔄', 'Count Conversion', 'Ne, Nm, Tex, Denier — convert between yarn count systems', '/count-conversion'),
@@ -83,9 +98,16 @@ class HomeScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 48),
-          const Text(
-            'Works fully offline.',
-            style: TextStyle(color: SpinColors.textGrey, fontSize: 14),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shield_outlined, size: 14, color: SpinColors.textSecondary),
+              SizedBox(width: 6),
+              Text(
+                'Spin Logic v1.0 • Verified offline mathematical precision',
+                style: TextStyle(color: SpinColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+            ],
           ),
         ],
       ),
@@ -100,38 +122,56 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: SpinColors.cardWhite,
           borderRadius: BorderRadius.circular(12),
-          border: const Border(left: BorderSide(color: SpinColors.amber, width: 4)),
+          border: Border.all(color: SpinColors.borderLight, width: 1.1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
+              color: const Color(0xFF0F172A).withValues(alpha: 0.02),
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         child: Row(
           children: [
-            Text(icon, style: const TextStyle(fontSize: 32)),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: SpinColors.coolGreyBg,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: SpinColors.borderLight),
+              ),
+              alignment: Alignment.center,
+              child: Text(icon, style: const TextStyle(fontSize: 22)),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(title, style: const TextStyle(color: SpinColors.navyDark, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: SpinColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(color: SpinColors.textGrey, fontSize: 13),
+                    style: const TextStyle(color: SpinColors.textSecondary, fontSize: 12.5),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: SpinColors.amber),
+            const SizedBox(width: 10),
+            const Icon(Icons.arrow_forward_ios, color: SpinColors.textSecondary, size: 14),
           ],
         ),
       ),

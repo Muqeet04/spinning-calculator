@@ -17,28 +17,19 @@ class PageScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: SpinColors.pageBg,
       body: Stack(
         children: [
-          // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [SpinColors.lavenderBg, SpinColors.cardWhite],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          // Watermark
+          // Subtle background decorative watermark
           const Positioned(
-            right: -50,
-            bottom: -50,
+            right: -60,
+            bottom: -60,
             child: Opacity(
-              opacity: 0.03,
+              opacity: 0.02,
               child: Icon(
-                Icons.settings,
-                size: 300,
-                color: SpinColors.navyDark,
+                Icons.hexagon_outlined,
+                size: 340,
+                color: SpinColors.royalBlue,
               ),
             ),
           ),
@@ -50,9 +41,9 @@ class PageScaffold extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1040),
+                      constraints: const BoxConstraints(maxWidth: 1080),
                       child: Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 28.0),
                         child: child,
                       ),
                     ),
@@ -69,16 +60,12 @@ class PageScaffold extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [SpinColors.navyDark, SpinColors.navyLight],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: SpinColors.royalNavy,
         border: Border(
-          bottom: BorderSide(color: SpinColors.amber, width: 3),
+          bottom: BorderSide(color: SpinColors.emerald, width: 2.5),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -90,17 +77,19 @@ class PageScaffold extends StatelessWidget {
                 if (GoRouter.of(context).canPop())
                   InkWell(
                     onTap: () => context.pop(),
+                    borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.arrow_back, color: SpinColors.navyDark, size: 16),
-                          SizedBox(width: 8),
-                          Text('Back to Home', style: TextStyle(color: SpinColors.navyDark, fontWeight: FontWeight.bold)),
+                          Icon(Icons.arrow_back, color: Colors.white, size: 15),
+                          SizedBox(width: 6),
+                          Text('Back to Home', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -109,36 +98,37 @@ class PageScaffold extends StatelessWidget {
                   const SizedBox.shrink(),
                 Row(
                   children: [
-                    _buildActionButton('Save data', SpinColors.successGreen, Colors.white),
+                    _buildActionButton('Save data', SpinColors.emerald, Colors.white),
                     const SizedBox(width: 8),
-                    _buildActionButton('Print', Colors.transparent, Colors.white, border: Colors.white),
+                    _buildActionButton('Print', Colors.transparent, Colors.white, border: Colors.white.withValues(alpha: 0.3)),
                     const SizedBox(width: 8),
-                    _buildActionButton('Save PDF', SpinColors.amber, SpinColors.navyDark),
+                    _buildActionButton('Save PDF', SpinColors.royalBlue, Colors.white),
                   ],
                 ),
               ],
             ),
             if (title == 'Spin Logic') ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
                     Image.asset(
                       'assets/images/logo.png',
-                      height: 100,
+                      height: 110,
                       errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.change_history,
+                        Icons.hexagon_outlined,
                         size: 70,
-                        color: SpinColors.amber,
+                        color: SpinColors.emerald,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Text(
                       title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -146,35 +136,60 @@ class PageScaffold extends StatelessWidget {
                       Text(
                         subtitle!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.lightBlueAccent,
-                          fontSize: 15,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
             ] else ...[
-              const SizedBox(height: 24),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  subtitle!,
-                  style: const TextStyle(
-                    color: Colors.lightBlueAccent,
-                    fontSize: 15,
+              const SizedBox(height: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    height: 38,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.hexagon_outlined,
+                      size: 28,
+                      color: SpinColors.emerald,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle!,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -182,17 +197,21 @@ class PageScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(String label, Color bgColor, Color textColor, {Color? border}) {
+  Widget _buildActionButton(String label, Color bg, Color text, {Color? border}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: bg,
         borderRadius: BorderRadius.circular(8),
         border: border != null ? Border.all(color: border) : null,
       ),
       child: Text(
         label,
-        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: text,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

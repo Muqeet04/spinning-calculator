@@ -16,35 +16,36 @@ class ResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [SpinColors.lavenderLight, SpinColors.cardWhite],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: highlight ? SpinColors.emeraldGlow : SpinColors.coolGreyBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: highlight ? SpinColors.emerald : SpinColors.borderLight,
+          width: highlight ? 1.5 : 1.0,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: highlight ? Border.all(color: SpinColors.amber, width: 2) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            label,
-            style: const TextStyle(
-              color: SpinColors.navyDark,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+            label.toUpperCase(),
+            style: TextStyle(
+              color: highlight ? SpinColors.emerald : SpinColors.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             (value == null || value!.isEmpty) ? '-' : value!,
-            style: const TextStyle(
-              color: SpinColors.navyDark,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              color: highlight ? const Color(0xFF065F46) : SpinColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
             ),
           ),
         ],
