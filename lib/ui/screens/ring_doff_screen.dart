@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../../core/calc/ring_doff.dart';
 import '../widgets/page_scaffold.dart';
 import '../widgets/input_card.dart';
 import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
+import '../widgets/pdf_report_helpers.dart';
 
 class RingDoffScreen extends StatefulWidget {
   const RingDoffScreen({super.key});
@@ -15,19 +18,73 @@ class RingDoffScreen extends StatefulWidget {
 
 class _RingDoffScreenState extends State<RingDoffScreen> {
   final _referenceTable = [
-    {'count': 20.0, 'speed': 15500.0, 'tpi': 18.40, 'bobbin': 70.0, 'roving': 1800.0},
-    {'count': 24.0, 'speed': 17500.0, 'tpi': 19.60, 'bobbin': 62.0, 'roving': 1700.0},
-    {'count': 30.0, 'speed': 19500.0, 'tpi': 21.08, 'bobbin': 55.0, 'roving': 1600.0},
-    {'count': 34.0, 'speed': 20500.0, 'tpi': 21.90, 'bobbin': 50.0, 'roving': 1550.0},
-    {'count': 40.0, 'speed': 22712.0, 'tpi': 22.96, 'bobbin': 45.1, 'roving': 1500.0},
-    {'count': 50.0, 'speed': 22000.0, 'tpi': 25.46, 'bobbin': 38.0, 'roving': 1400.0},
-    {'count': 60.0, 'speed': 21000.0, 'tpi': 27.89, 'bobbin': 33.0, 'roving': 1300.0},
-    {'count': 70.0, 'speed': 19500.0, 'tpi': 30.12, 'bobbin': 28.0, 'roving': 1200.0},
-    {'count': 80.2, 'speed': 18000.0, 'tpi': 32.26, 'bobbin': 24.0, 'roving': 1100.0},
+    {
+      'count': 20.0,
+      'speed': 15500.0,
+      'tpi': 18.40,
+      'bobbin': 70.0,
+      'roving': 1800.0
+    },
+    {
+      'count': 24.0,
+      'speed': 17500.0,
+      'tpi': 19.60,
+      'bobbin': 62.0,
+      'roving': 1700.0
+    },
+    {
+      'count': 30.0,
+      'speed': 19500.0,
+      'tpi': 21.08,
+      'bobbin': 55.0,
+      'roving': 1600.0
+    },
+    {
+      'count': 34.0,
+      'speed': 20500.0,
+      'tpi': 21.90,
+      'bobbin': 50.0,
+      'roving': 1550.0
+    },
+    {
+      'count': 40.0,
+      'speed': 22712.0,
+      'tpi': 22.96,
+      'bobbin': 45.1,
+      'roving': 1500.0
+    },
+    {
+      'count': 50.0,
+      'speed': 22000.0,
+      'tpi': 25.46,
+      'bobbin': 38.0,
+      'roving': 1400.0
+    },
+    {
+      'count': 60.0,
+      'speed': 21000.0,
+      'tpi': 27.89,
+      'bobbin': 33.0,
+      'roving': 1300.0
+    },
+    {
+      'count': 70.0,
+      'speed': 19500.0,
+      'tpi': 30.12,
+      'bobbin': 28.0,
+      'roving': 1200.0
+    },
+    {
+      'count': 80.2,
+      'speed': 18000.0,
+      'tpi': 32.26,
+      'bobbin': 24.0,
+      'roving': 1100.0
+    },
   ];
 
   String _calcMode = 'Auto from count';
-  
+
   String _yarnCount = '40';
   String _spindleSpeed = '22712';
   String _tpi = '22.96';
@@ -41,7 +98,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
   final _tpiCtrl = TextEditingController(text: '22.96');
   final _bobbinCtrl = TextEditingController(text: '45.1');
   final _rovingCtrl = TextEditingController(text: '1500');
-  
+
   RingDoffResult? _result;
   String? _warningMsg;
 
@@ -64,17 +121,20 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
     _warningMsg = null;
     if (_referenceTable.isEmpty) return;
 
-    if (count < _referenceTable.first['count']! || count > _referenceTable.last['count']!) {
-      _warningMsg = "Count is outside the reference-sheet range (20–80.2 Ne). Values are extrapolated from the nearest reference segment.";
+    if (count < _referenceTable.first['count']! ||
+        count > _referenceTable.last['count']!) {
+      _warningMsg =
+          "Count is outside the reference-sheet range (20–80.2 Ne). Values are extrapolated from the nearest reference segment.";
     }
 
     Map<String, double> p1 = _referenceTable.first;
     Map<String, double> p2 = _referenceTable.last;
-    
+
     for (int i = 0; i < _referenceTable.length - 1; i++) {
-      if (count >= _referenceTable[i]['count']! && count <= _referenceTable[i+1]['count']!) {
+      if (count >= _referenceTable[i]['count']! &&
+          count <= _referenceTable[i + 1]['count']!) {
         p1 = _referenceTable[i];
-        p2 = _referenceTable[i+1];
+        p2 = _referenceTable[i + 1];
         break;
       }
     }
@@ -88,7 +148,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
     }
 
     double ratio = (count - p1['count']!) / (p2['count']! - p1['count']!);
-    
+
     double speed = p1['speed']! + ratio * (p2['speed']! - p1['speed']!);
     double tpi = p1['tpi']! + ratio * (p2['tpi']! - p1['tpi']!);
     double bobbin = p1['bobbin']! + ratio * (p2['bobbin']! - p1['bobbin']!);
@@ -128,7 +188,14 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
       final f = int.tryParse(_frameSpindles);
       final sl = double.tryParse(_shiftLength);
 
-      if (c == null || s == null || t == null || b == null || r == null || d == null || f == null || sl == null) {
+      if (c == null ||
+          s == null ||
+          t == null ||
+          b == null ||
+          r == null ||
+          d == null ||
+          f == null ||
+          sl == null) {
         return;
       }
 
@@ -145,13 +212,100 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
     });
   }
 
+  Future<List<pw.Widget>> _buildPdfReport(pw.Context context) async {
+    final widgets = <pw.Widget>[];
+
+    // Inputs
+    widgets.add(
+        PdfReportHelpers.sectionTitle('1. Ring Frame & Package Parameters'));
+    widgets.add(
+      PdfReportHelpers.keyValGrid({
+        'Yarn Count (Ne)': _yarnCount,
+        'Calculation Mode': _calcMode,
+        'Spindle Speed (RPM)': _spindleSpeed,
+        'TPI': _tpi,
+        'Ring Bobbin Wt (g)': '$_ringBobbinWeight g',
+        'Roving Package Wt (g)': '$_rovingPackageWeight g',
+        'Ring Cup Diameter (mm)': '$_ringCupDiameter mm',
+        'Frame Spindles': _frameSpindles,
+        'Shift Length (hrs)': '$_shiftLength hrs',
+      }),
+    );
+    widgets.add(pw.SizedBox(height: 12));
+
+    if (_warningMsg != null) {
+      widgets.add(pw.Text(
+        PdfReportHelpers.printableText(_warningMsg!),
+        style: const pw.TextStyle(fontSize: 9, color: PdfColors.orange800),
+      ));
+      widgets.add(pw.SizedBox(height: 8));
+    }
+
+    // Results
+    if (_result != null) {
+      final res = _result!;
+      widgets.add(
+          PdfReportHelpers.sectionTitle('2. Ring Doff Time & Productivity'));
+      widgets.add(
+        pw.Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            PdfReportHelpers.summaryCard(
+                'Ring Doff Time', '${res.doffTimeMin.toStringAsFixed(2)} min',
+                highlight: true),
+            PdfReportHelpers.summaryCard('Prod / Spindle / Hr',
+                '${res.outputPerSpindlePerHourG.toStringAsFixed(2)} g'),
+            PdfReportHelpers.summaryCard('Roving Pkgs / Day / Frame',
+                res.rovingPackagesPerDayPerFrame.toStringAsFixed(2),
+                highlight: true),
+            PdfReportHelpers.summaryCard('Roving Pkgs / Shift / Frame',
+                res.rovingPackagesPerShift.toStringAsFixed(2)),
+            PdfReportHelpers.summaryCard('Roving Pkgs / Doff Change',
+                res.rovingPackagesPerDoffChange.toStringAsFixed(2)),
+            PdfReportHelpers.summaryCard('Yarn Prod / Day / Frame',
+                '${res.yarnProductionPerDayPerFrameKg.toStringAsFixed(2)} kg',
+                highlight: true),
+          ],
+        ),
+      );
+      widgets.add(pw.SizedBox(height: 12));
+
+      widgets.add(PdfReportHelpers.sectionTitle(
+          '3. Roving Consumption & Intermediate Metrics'));
+      widgets.add(
+        PdfReportHelpers.keyValGrid({
+          'Time to Consume 1 Roving':
+              '${res.timeToConsumeRovingHours.toStringAsFixed(2)} hrs',
+          'Days to Consume 1 Roving':
+              '${res.daysToConsumeRoving.toStringAsFixed(2)} days',
+          'Twist Multiplier (TM)': res.tm.toStringAsFixed(3),
+          'OPS (oz/spindle/shift)': res.ops.toStringAsFixed(2),
+          'Doff Run Time': '${res.doffTimeMin.toStringAsFixed(2)} min',
+          'Doffs / Day': res.doffsPerDay.toStringAsFixed(2),
+          'Output / Spl / Hr':
+              '${res.outputPerSpindlePerHourG.toStringAsFixed(2)} g',
+        }),
+      );
+    } else {
+      widgets.add(
+        pw.Text('Enter valid parameters to compute ring doff metrics.',
+            style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+      );
+    }
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAuto = _calcMode == 'Auto from count';
 
     return PageScaffold(
       title: 'Ring Doff & Roving Consumption',
-      subtitle: 'Ring doff time, roving packages consumed per day/shift/doff, OPS and yarn production',
+      subtitle:
+          'Ring doff time, roving packages consumed per day/shift/doff, OPS and yarn production',
+      onGeneratePdfReport: _buildPdfReport,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,6 +317,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                 children: [
                   StyledTextField(
                     label: 'Yarn count (Ne)',
+                    initialValue: _yarnCount,
                     isNumber: true,
                     onChanged: (val) {
                       _yarnCount = val;
@@ -174,8 +329,12 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                     label: 'Calculation mode',
                     value: _calcMode,
                     items: const [
-                      DropdownMenuItem(value: 'Auto from count', child: Text('Auto from count')),
-                      DropdownMenuItem(value: 'Manual parameters', child: Text('Manual parameters')),
+                      DropdownMenuItem(
+                          value: 'Auto from count',
+                          child: Text('Auto from count')),
+                      DropdownMenuItem(
+                          value: 'Manual parameters',
+                          child: Text('Manual parameters')),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -193,8 +352,10 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                         children: [
                           TextField(
                             controller: _speedCtrl,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: const InputDecoration(labelText: 'Spindle speed (RPM)'),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                                labelText: 'Spindle speed (RPM)'),
                             onChanged: (val) {
                               _spindleSpeed = val;
                               _calculate();
@@ -203,7 +364,8 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: _tpiCtrl,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             decoration: const InputDecoration(labelText: 'TPI'),
                             onChanged: (val) {
                               _tpi = val;
@@ -213,8 +375,10 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: _bobbinCtrl,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: const InputDecoration(labelText: 'Ring bobbin weight (g)'),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                                labelText: 'Ring bobbin weight (g)'),
                             onChanged: (val) {
                               _ringBobbinWeight = val;
                               _calculate();
@@ -223,8 +387,10 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: _rovingCtrl,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: const InputDecoration(labelText: 'Roving package weight (g)'),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                                labelText: 'Roving package weight (g)'),
                             onChanged: (val) {
                               _rovingPackageWeight = val;
                               _calculate();
@@ -237,6 +403,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                   const SizedBox(height: 16),
                   StyledTextField(
                     label: 'Ring cup diameter (mm)',
+                    initialValue: _ringCupDiameter,
                     isNumber: true,
                     onChanged: (val) {
                       _ringCupDiameter = val;
@@ -246,6 +413,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                   const SizedBox(height: 16),
                   StyledTextField(
                     label: 'Frame spindles',
+                    initialValue: _frameSpindles,
                     isNumber: true,
                     onChanged: (val) {
                       _frameSpindles = val;
@@ -255,6 +423,7 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                   const SizedBox(height: 16),
                   StyledTextField(
                     label: 'Shift length (hours)',
+                    initialValue: _shiftLength,
                     isNumber: true,
                     onChanged: (val) {
                       _shiftLength = val;
@@ -280,7 +449,8 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                       border: Border.all(color: Colors.orange),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(_warningMsg!, style: const TextStyle(color: Colors.orange)),
+                    child: Text(_warningMsg!,
+                        style: const TextStyle(color: Colors.orange)),
                   ),
                 InputCard(
                   title: 'Ring doff time calculation',
@@ -292,13 +462,35 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 2.5,
                     children: [
-                      ResultTile(label: 'Ring doff time (min)', value: _result?.doffTimeMin.toStringAsFixed(2), highlight: true),
-                      ResultTile(label: 'Ring cup diameter (mm)', value: _ringCupDiameter),
-                      ResultTile(label: 'Yarn production/spindle/hour (g)', value: _result?.outputPerSpindlePerHourG.toStringAsFixed(2)),
-                      ResultTile(label: 'Roving packages per day/frame', value: _result?.rovingPackagesPerDayPerFrame.toStringAsFixed(2), highlight: true),
-                      ResultTile(label: 'Roving packages per doff change', value: _result?.rovingPackagesPerDoffChange.toStringAsFixed(2)),
-                      ResultTile(label: 'Roving packages per shift/frame', value: _result?.rovingPackagesPerShift.toStringAsFixed(2)),
-                      ResultTile(label: 'Yarn production/day/frame (kg)', value: _result?.yarnProductionPerDayPerFrameKg.toStringAsFixed(2), highlight: true),
+                      ResultTile(
+                          label: 'Ring doff time (min)',
+                          value: _result?.doffTimeMin.toStringAsFixed(2),
+                          highlight: true),
+                      ResultTile(
+                          label: 'Ring cup diameter (mm)',
+                          value: _ringCupDiameter),
+                      ResultTile(
+                          label: 'Yarn production/spindle/hour (g)',
+                          value: _result?.outputPerSpindlePerHourG
+                              .toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Roving packages per day/frame',
+                          value: _result?.rovingPackagesPerDayPerFrame
+                              .toStringAsFixed(2),
+                          highlight: true),
+                      ResultTile(
+                          label: 'Roving packages per doff change',
+                          value: _result?.rovingPackagesPerDoffChange
+                              .toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Roving packages per shift/frame',
+                          value: _result?.rovingPackagesPerShift
+                              .toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Yarn production/day/frame (kg)',
+                          value: _result?.yarnProductionPerDayPerFrameKg
+                              .toStringAsFixed(2),
+                          highlight: true),
                     ],
                   ),
                 ),
@@ -313,8 +505,14 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 2.5,
                     children: [
-                      ResultTile(label: 'Time to consume one roving (hours)', value: _result?.timeToConsumeRovingHours.toStringAsFixed(2)),
-                      ResultTile(label: 'Days to consume one roving', value: _result?.daysToConsumeRoving.toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Time to consume one roving (hours)',
+                          value: _result?.timeToConsumeRovingHours
+                              .toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Days to consume one roving',
+                          value:
+                              _result?.daysToConsumeRoving.toStringAsFixed(2)),
                     ],
                   ),
                 ),
@@ -329,11 +527,22 @@ class _RingDoffScreenState extends State<RingDoffScreen> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 2.5,
                     children: [
-                      ResultTile(label: 'TM', value: _result?.tm.toStringAsFixed(2)),
-                      ResultTile(label: 'OPS (oz/spindle/shift)', value: _result?.ops.toStringAsFixed(2), highlight: true),
-                      ResultTile(label: 'Doff run time (min)', value: _result?.doffTimeMin.toStringAsFixed(2)),
-                      ResultTile(label: 'Doffs/day', value: _result?.doffsPerDay.toStringAsFixed(2)),
-                      ResultTile(label: 'Output/spindle/hour (g)', value: _result?.outputPerSpindlePerHourG.toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'TM', value: _result?.tm.toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'OPS (oz/spindle/shift)',
+                          value: _result?.ops.toStringAsFixed(2),
+                          highlight: true),
+                      ResultTile(
+                          label: 'Doff run time (min)',
+                          value: _result?.doffTimeMin.toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Doffs/day',
+                          value: _result?.doffsPerDay.toStringAsFixed(2)),
+                      ResultTile(
+                          label: 'Output/spindle/hour (g)',
+                          value: _result?.outputPerSpindlePerHourG
+                              .toStringAsFixed(2)),
                     ],
                   ),
                 ),

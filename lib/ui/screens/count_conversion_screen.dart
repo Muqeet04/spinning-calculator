@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:spin_logic/app/theme.dart';
 import 'package:spin_logic/core/calc/count_conversion.dart';
 import 'package:spin_logic/ui/widgets/input_card.dart';
@@ -6,6 +8,7 @@ import 'package:spin_logic/ui/widgets/page_scaffold.dart';
 import 'package:spin_logic/ui/widgets/result_tile.dart';
 import 'package:spin_logic/ui/widgets/styled_dropdown.dart';
 import 'package:spin_logic/ui/widgets/styled_text_field.dart';
+import 'package:spin_logic/ui/widgets/pdf_report_helpers.dart';
 
 class CountConversionScreen extends StatefulWidget {
   const CountConversionScreen({super.key});
@@ -189,11 +192,88 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
     );
   }
 
+  Future<List<pw.Widget>> _buildPdfReport(pw.Context context) async {
+    final widgets = <pw.Widget>[];
+
+    // Card 1 results
+    widgets.add(PdfReportHelpers.sectionTitle('1. Count Converter'));
+    widgets.add(
+      PdfReportHelpers.keyValGrid({
+        'Source Input Value': _card1Input.isEmpty ? '-' : _card1Input,
+        'Source Count System': _card1Unit,
+      }),
+    );
+    widgets.add(pw.SizedBox(height: 8));
+
+    if (_card1Results.isNotEmpty) {
+      final rows = _card1Results.entries
+          .map((e) => [e.key, e.value.toStringAsFixed(4)])
+          .toList();
+      widgets.add(
+        PdfReportHelpers.dataTable(
+          headers: ['Count System', 'Converted Equivalent Value'],
+          rows: rows,
+          flexWidths: [3, 4],
+        ),
+      );
+    } else {
+      widgets.add(
+        pw.Text(
+          _card1Error ?? 'No source count entered for Card 1.',
+          style: pw.TextStyle(
+              fontSize: 9,
+              color:
+                  _card1Error != null ? PdfColors.red800 : PdfColors.grey600),
+        ),
+      );
+    }
+
+    widgets.add(pw.SizedBox(height: 14));
+
+    // Card 2 results
+    widgets.add(PdfReportHelpers.sectionTitle('2. Linear Density Calculator'));
+    widgets.add(
+      PdfReportHelpers.keyValGrid({
+        'Length': '$_card2LengthInput $_card2LengthUnit',
+        'Weight': '$_card2WeightInput $_card2WeightUnit',
+        'Calculation Mode': _card2FindMode,
+        'Common Sample Length': _card2SampleLength ?? 'Custom length',
+      }),
+    );
+    widgets.add(pw.SizedBox(height: 8));
+
+    if (_card2Results.isNotEmpty) {
+      final rows = _card2Results.entries
+          .map((e) => [e.key, e.value.toStringAsFixed(4)])
+          .toList();
+      widgets.add(
+        PdfReportHelpers.dataTable(
+          headers: ['Count System', 'Computed Equivalent Value'],
+          rows: rows,
+          flexWidths: [3, 4],
+        ),
+      );
+    } else {
+      widgets.add(
+        pw.Text(
+          _card2Error ?? 'No valid length/weight values entered for Card 2.',
+          style: pw.TextStyle(
+              fontSize: 9,
+              color:
+                  _card2Error != null ? PdfColors.red800 : PdfColors.grey600),
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageScaffold(
       title: 'Count Conversion',
       subtitle: 'Convert between different yarn count systems',
+      onGeneratePdfReport: _buildPdfReport,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -264,7 +344,9 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                   items: [
                     'Count/linear density from length and weight',
                     'Weight from count and length'
-                  ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  ]
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) {
                       setState(() {
@@ -284,7 +366,9 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                     '10 m',
                     '1 m',
                     '1 yd'
-                  ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  ]
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
                   onChanged: _onSampleLengthSelected,
                 ),
                 const SizedBox(height: 16),
@@ -307,7 +391,8 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                           const SizedBox(height: 8),
                           TextField(
                             controller: _lengthController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             onChanged: (val) {
                               _card2LengthInput = val;
                               _calculateCard2();
@@ -324,7 +409,8 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                         label: 'Unit',
                         value: _card2LengthUnit,
                         items: ['m', 'yd', 'cm', 'in', 'ft']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {
@@ -360,7 +446,8 @@ class _CountConversionScreenState extends State<CountConversionScreen> {
                         label: 'Unit',
                         value: _card2WeightUnit,
                         items: ['g', 'mg', 'kg', 'grain', 'oz', 'lb']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
                         onChanged: (val) {
                           if (val != null) {

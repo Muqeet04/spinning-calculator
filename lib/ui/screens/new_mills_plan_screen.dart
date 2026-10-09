@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../widgets/page_scaffold.dart';
 import '../widgets/input_card.dart';
 import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
+import '../widgets/pdf_report_helpers.dart';
 
 class NewMillsPlanScreen extends ConsumerStatefulWidget {
   const NewMillsPlanScreen({super.key});
@@ -26,6 +28,19 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
   String _winders = 'New (1400 m/min)';
   String _matchBags = 'Reducing speed (whole machines)';
 
+  static const _summaryRows = <List<String>>[
+    ['Ring frames', '20', '200', '200', '0'],
+    ['Ring spindles', '36480', '-', '-', '-'],
+    ['Autocone spindles', '800', '-', '-', '-'],
+    ['Simplex (flyers)', '240', '206', '206', '0'],
+    ['Finisher', '2', '206', '206', '0'],
+    ['Comber', '3', '103', '103', '0'],
+    ['Lap former', '1', '103', '103', '0'],
+    ['Breaker', '2', '206', '206', '0'],
+    ['Cards', '8', '206', '206', '0'],
+    ['Blow room lines', '1', '206', '206', '0'],
+  ];
+
   @override
   void dispose() {
     _millNameCtrl.dispose();
@@ -35,11 +50,89 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
     super.dispose();
   }
 
+  Future<List<pw.Widget>> _buildPdfReport(pw.Context context) async {
+    return [
+      PdfReportHelpers.sectionTitle('0. Mill Setup - Current Inputs'),
+      PdfReportHelpers.keyValGrid({
+        'Mill Name': _millNameCtrl.text.isEmpty ? '-' : _millNameCtrl.text,
+        'Spindles/Frame (Ring)': _spindlesCtrl.text,
+        'Card Feed Width': _cardFeed,
+        'Flyer': _flyer,
+        'Combers': _combers,
+        'Lap Former': _lapFormer,
+        'Winders': _winders,
+        'Bag weight (lbs)': _bagWeightCtrl.text,
+        'Working hours/day': _hoursCtrl.text,
+        'Match actual bags to required by': _matchBags,
+      }),
+      pw.SizedBox(height: 8),
+      pw.Text(
+        'The following bags, machine requirements and summary values are the sample data currently shown on this page. They are not recalculated from the mill setup inputs.',
+        style: const pw.TextStyle(fontSize: 9),
+      ),
+      PdfReportHelpers.sectionTitle('1. Bags Required - Displayed Sample'),
+      PdfReportHelpers.dataTable(
+        headers: ['Quality', 'Application', 'Count', 'Bags Req.'],
+        rows: const [
+          ['Combed', 'Warp', '40', '100'],
+          ['Carded', 'Warp', '30', '100'],
+        ],
+      ),
+      PdfReportHelpers.keyValGrid(const {
+        'Combed Bags Total': '100',
+        'Carded Bags Total': '100',
+        'Total Bags Required': '200',
+      }),
+      PdfReportHelpers.sectionTitle('2. Ring & Autocone'),
+      pw.Text('No data rows are currently shown in this table.',
+          style: const pw.TextStyle(fontSize: 9)),
+      pw.SizedBox(height: 4),
+      pw.Text(
+        'Columns: Count; Req.Bags; A.Count; TM; TPI; Spindle Speed; Eff%; OPS; Bags/Frame; Frames Req.; Ring Spindles Req.; Actual Bags (Ring); W.Speed; A.Cone Eff%; Winder Spindles Req.; Actual Bags (Winder).',
+        style: const pw.TextStyle(fontSize: 8),
+      ),
+      PdfReportHelpers.sectionTitle('3. Simplex - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {
+        'Req. Roving Bags': '206',
+        'Simplex machines & flyers required': '2 (240 flyers)',
+      }),
+      PdfReportHelpers.sectionTitle('4. Finisher Drawing - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {'Machines required': '2'}),
+      PdfReportHelpers.sectionTitle(
+          '5. Comber & Lap Former - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {
+        'Combers required': '3',
+        'Lap formers required': '1',
+      }),
+      PdfReportHelpers.sectionTitle('6. Breaker Drawing - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {'Machines required': '2'}),
+      PdfReportHelpers.sectionTitle(
+          '7. Blow Room Line Design - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {'Lines required': '1'}),
+      PdfReportHelpers.sectionTitle('8. Carding - Displayed Sample'),
+      PdfReportHelpers.keyValGrid(const {'Cards required': '8'}),
+      PdfReportHelpers.sectionTitle('9. Summary Table - Displayed Sample'),
+      PdfReportHelpers.dataTable(
+        headers: [
+          'Department',
+          'Required (machines)',
+          'Required Bags',
+          'Actual Bags',
+          'Difference'
+        ],
+        rows: _summaryRows,
+        flexWidths: [3, 2, 2, 2, 2],
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageScaffold(
       title: 'New mills plan',
-      subtitle: 'From required bags to machines and speeds across all spinning departments',
+      subtitle:
+          'From required bags to machines and speeds across all spinning departments',
+      onGeneratePdfReport: _buildPdfReport,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -49,70 +142,114 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
               children: [
                 StyledTextField(controller: _millNameCtrl, label: 'Mill Name'),
                 const SizedBox(height: 12),
-                StyledTextField(controller: _spindlesCtrl, label: 'Spindles/Frame (Ring)', keyboardType: TextInputType.number),
+                StyledTextField(
+                    controller: _spindlesCtrl,
+                    label: 'Spindles/Frame (Ring)',
+                    keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Card Feed Width',
                   value: _cardFeed,
                   items: const [
-                    DropdownMenuItem(value: 'Wider (100 kg/hr)', child: Text('Wider (100 kg/hr)')),
-                    DropdownMenuItem(value: 'Narrow (55 kg/hr)', child: Text('Narrow (55 kg/hr)')),
+                    DropdownMenuItem(
+                        value: 'Wider (100 kg/hr)',
+                        child: Text('Wider (100 kg/hr)')),
+                    DropdownMenuItem(
+                        value: 'Narrow (55 kg/hr)',
+                        child: Text('Narrow (55 kg/hr)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _cardFeed = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _cardFeed = v);
+                  },
                 ),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Flyer',
                   value: _flyer,
                   items: const [
-                    DropdownMenuItem(value: 'New faster (1200)', child: Text('New faster (1200)')),
-                    DropdownMenuItem(value: 'Old (1000)', child: Text('Old (1000)')),
+                    DropdownMenuItem(
+                        value: 'New faster (1200)',
+                        child: Text('New faster (1200)')),
+                    DropdownMenuItem(
+                        value: 'Old (1000)', child: Text('Old (1000)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _flyer = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _flyer = v);
+                  },
                 ),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Combers',
                   value: _combers,
                   items: const [
-                    DropdownMenuItem(value: 'New (475–500 nips/min)', child: Text('New (475–500 nips/min)')),
-                    DropdownMenuItem(value: 'Old (400 nips/min)', child: Text('Old (400 nips/min)')),
+                    DropdownMenuItem(
+                        value: 'New (475–500 nips/min)',
+                        child: Text('New (475–500 nips/min)')),
+                    DropdownMenuItem(
+                        value: 'Old (400 nips/min)',
+                        child: Text('Old (400 nips/min)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _combers = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _combers = v);
+                  },
                 ),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Lap Former',
                   value: _lapFormer,
                   items: const [
-                    DropdownMenuItem(value: 'New (150 m/min)', child: Text('New (150 m/min)')),
-                    DropdownMenuItem(value: 'Old (100 m/min)', child: Text('Old (100 m/min)')),
+                    DropdownMenuItem(
+                        value: 'New (150 m/min)',
+                        child: Text('New (150 m/min)')),
+                    DropdownMenuItem(
+                        value: 'Old (100 m/min)',
+                        child: Text('Old (100 m/min)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _lapFormer = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _lapFormer = v);
+                  },
                 ),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Winders',
                   value: _winders,
                   items: const [
-                    DropdownMenuItem(value: 'New (1400 m/min)', child: Text('New (1400 m/min)')),
-                    DropdownMenuItem(value: 'Old (1000 m/min)', child: Text('Old (1000 m/min)')),
+                    DropdownMenuItem(
+                        value: 'New (1400 m/min)',
+                        child: Text('New (1400 m/min)')),
+                    DropdownMenuItem(
+                        value: 'Old (1000 m/min)',
+                        child: Text('Old (1000 m/min)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _winders = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _winders = v);
+                  },
                 ),
                 const SizedBox(height: 12),
-                StyledTextField(controller: _bagWeightCtrl, label: 'Bag weight lbs', keyboardType: TextInputType.number),
+                StyledTextField(
+                    controller: _bagWeightCtrl,
+                    label: 'Bag weight lbs',
+                    keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
-                StyledTextField(controller: _hoursCtrl, label: 'Working hours/day', keyboardType: TextInputType.number),
+                StyledTextField(
+                    controller: _hoursCtrl,
+                    label: 'Working hours/day',
+                    keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
                 StyledDropdown<String>(
                   label: 'Match actual bags to required by',
                   value: _matchBags,
                   items: const [
-                    DropdownMenuItem(value: 'Reducing speed (whole machines)', child: Text('Reducing speed (whole machines)')),
-                    DropdownMenuItem(value: 'Decimal machines (full speed)', child: Text('Decimal machines (full speed)')),
+                    DropdownMenuItem(
+                        value: 'Reducing speed (whole machines)',
+                        child: Text('Reducing speed (whole machines)')),
+                    DropdownMenuItem(
+                        value: 'Decimal machines (full speed)',
+                        child: Text('Decimal machines (full speed)')),
                   ],
-                  onChanged: (v) { if (v != null) setState(() => _matchBags = v); },
+                  onChanged: (v) {
+                    if (v != null) setState(() => _matchBags = v);
+                  },
                 ),
               ],
             ),
@@ -163,7 +300,10 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
                   children: [
                     ResultTile(label: 'Combed Bags Total', value: '100'),
                     ResultTile(label: 'Carded Bags Total', value: '100'),
-                    ResultTile(label: 'Total Bags Required', value: '200', highlight: true),
+                    ResultTile(
+                        label: 'Total Bags Required',
+                        value: '200',
+                        highlight: true),
                   ],
                 ),
               ],
@@ -203,7 +343,9 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
             child: Column(
               children: [
                 ResultTile(label: 'Req. Roving Bags', value: '206'),
-                ResultTile(label: 'Simplex machines & flyers required', value: '2 (240 flyers)'),
+                ResultTile(
+                    label: 'Simplex machines & flyers required',
+                    value: '2 (240 flyers)'),
               ],
             ),
           ),
@@ -250,18 +392,13 @@ class _NewMillsPlanScreenState extends ConsumerState<NewMillsPlanScreen> {
                   DataColumn(label: Text('Actual Bags')),
                   DataColumn(label: Text('Difference')),
                 ],
-                rows: const [
-                  DataRow(cells: [DataCell(Text('Ring frames')), DataCell(Text('20')), DataCell(Text('200')), DataCell(Text('200')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Ring spindles')), DataCell(Text('36480')), DataCell(Text('-')), DataCell(Text('-')), DataCell(Text('-'))]),
-                  DataRow(cells: [DataCell(Text('Autocone spindles')), DataCell(Text('800')), DataCell(Text('-')), DataCell(Text('-')), DataCell(Text('-'))]),
-                  DataRow(cells: [DataCell(Text('Simplex (flyers)')), DataCell(Text('240')), DataCell(Text('206')), DataCell(Text('206')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Finisher')), DataCell(Text('2')), DataCell(Text('206')), DataCell(Text('206')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Comber')), DataCell(Text('3')), DataCell(Text('103')), DataCell(Text('103')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Lap former')), DataCell(Text('1')), DataCell(Text('103')), DataCell(Text('103')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Breaker')), DataCell(Text('2')), DataCell(Text('206')), DataCell(Text('206')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Cards')), DataCell(Text('8')), DataCell(Text('206')), DataCell(Text('206')), DataCell(Text('0'))]),
-                  DataRow(cells: [DataCell(Text('Blow room lines')), DataCell(Text('1')), DataCell(Text('206')), DataCell(Text('206')), DataCell(Text('0'))]),
-                ],
+                rows: _summaryRows
+                    .map((row) => DataRow(
+                          cells: row
+                              .map((value) => DataCell(Text(value)))
+                              .toList(),
+                        ))
+                    .toList(),
               ),
             ),
           ),

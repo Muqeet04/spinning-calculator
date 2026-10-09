@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../widgets/page_scaffold.dart';
 import '../widgets/input_card.dart';
 import '../widgets/result_tile.dart';
 import '../widgets/styled_text_field.dart';
 import '../widgets/styled_dropdown.dart';
+import '../widgets/pdf_report_helpers.dart';
 
 class ProductionScreen extends StatefulWidget {
   const ProductionScreen({super.key});
@@ -136,11 +138,195 @@ class _ProductionScreenState extends State<ProductionScreen> {
     return double.tryParse(ctrl.text) ?? 0.0;
   }
 
+  Future<List<pw.Widget>> _buildPdfReport(pw.Context context) async {
+    final widgets = <pw.Widget>[];
+
+    // Department section
+    widgets.add(PdfReportHelpers.sectionTitle('Department: $_department'));
+
+    final commonInputs = <String, String>{
+      'Efficiency': '${_effCtrl.text}%',
+      'Shift Hours': '${_shiftHoursCtrl.text} hrs',
+      'Bag Weight': '${_bagWtCtrl.text} kg',
+      'Shifts / Day': _shiftsDayCtrl.text,
+    };
+
+    final deptInputs = <String, String>{};
+    final calculatedResults = <String, String>{};
+
+    final eff = _val(_effCtrl) / 100.0;
+    final hrs = _val(_shiftHoursCtrl);
+    final bagKg = _val(_bagWtCtrl);
+    final bagLbs = bagKg / 0.453592;
+    final shifts = _val(_shiftsDayCtrl);
+
+    if (_department == 'Ring frame (spinning)') {
+      deptInputs['Spindle Speed'] = '${_rfSpindleSpeedCtrl.text} RPM';
+      deptInputs['Count (Ne)'] = _rfCountCtrl.text;
+      deptInputs['Twist Multiplier (TM)'] = _rfTmCtrl.text;
+      deptInputs['Total Spindles'] = _rfSpindlesCtrl.text;
+
+      final rpm = _val(_rfSpindleSpeedCtrl);
+      final count = _val(_rfCountCtrl);
+      final tm = _val(_rfTmCtrl);
+      final spindles = _val(_rfSpindlesCtrl);
+
+      final tpi = count > 0 ? tm * math.sqrt(count) : 0.0;
+      final ops = (tpi > 0 && count > 0)
+          ? (rpm * 60 * hrs * eff) / (tpi * 36 * count * 840) * 16
+          : 0.0;
+      final lbsShift = ops * spindles / 16;
+      final kgShift = lbsShift * 0.453592;
+      final bagsDay = bagLbs > 0 ? (lbsShift * shifts) / bagLbs : 0.0;
+
+      calculatedResults['TPI'] = tpi.toStringAsFixed(2);
+      calculatedResults['OPS (oz/spl/shift)'] = ops.toStringAsFixed(2);
+      calculatedResults['Lbs / shift'] = lbsShift.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    } else if (_department == 'Carding') {
+      deptInputs['Delivery Speed'] = '${_cardSpeedCtrl.text} m/min';
+      deptInputs['Sliver Weight'] = '${_cardSliverCtrl.text} gr/yd';
+      deptInputs['No. of Cards'] = _cardCardsCtrl.text;
+
+      final speed = _val(_cardSpeedCtrl);
+      final sliverWt = _val(_cardSliverCtrl);
+      final cards = _val(_cardCardsCtrl);
+
+      final outputYardsShift = speed * 1.0936 * 60 * hrs * eff;
+      final outputLbsShift = (outputYardsShift * sliverWt) / 7000;
+      final totalLbs = outputLbsShift * cards;
+      final kgShift = totalLbs * 0.453592;
+      final bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0.0;
+
+      calculatedResults['Lbs / shift'] = totalLbs.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    } else if (_department == 'Draw frame') {
+      deptInputs['Delivery Speed'] = '${_dfSpeedCtrl.text} m/min';
+      deptInputs['Sliver Weight'] = '${_dfSliverCtrl.text} gr/yd';
+      deptInputs['Deliveries'] = _dfDeliveriesCtrl.text;
+
+      final speed = _val(_dfSpeedCtrl);
+      final sliverWt = _val(_dfSliverCtrl);
+      final deliveries = _val(_dfDeliveriesCtrl);
+
+      final outputYardsShift = speed * 1.0936 * 60 * hrs * eff;
+      final outputLbsShift = (outputYardsShift * sliverWt) / 7000;
+      final totalLbs = outputLbsShift * deliveries;
+      final kgShift = totalLbs * 0.453592;
+      final bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0.0;
+
+      calculatedResults['Lbs / shift'] = totalLbs.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    } else if (_department == 'Comber') {
+      deptInputs['Nips / min'] = _cmbNipsCtrl.text;
+      deptInputs['Feed Length'] = '${_cmbFeedLengthCtrl.text} mm';
+      deptInputs['Noil %'] = '${_cmbNoilCtrl.text}%';
+      deptInputs['Heads'] = _cmbHeadsCtrl.text;
+      deptInputs['Combers'] = _cmbCombersCtrl.text;
+      deptInputs['Lap Weight'] = '${_cmbLapWtCtrl.text} gr/yd';
+
+      final nips = _val(_cmbNipsCtrl);
+      final feedLength = _val(_cmbFeedLengthCtrl);
+      final noilPct = _val(_cmbNoilCtrl);
+      final heads = _val(_cmbHeadsCtrl);
+      final combers = _val(_cmbCombersCtrl);
+      final lapWt = _val(_cmbLapWtCtrl);
+
+      final lbsHrHead =
+          (nips * feedLength / 1000 * 1.0936 * 60 * lapWt / 7000) *
+              eff *
+              (100 - noilPct) /
+              100;
+      final totalLbs = lbsHrHead * hrs * heads * combers;
+      final noilLbs =
+          (100 - noilPct) > 0 ? (totalLbs / (100 - noilPct)) * noilPct : 0.0;
+      final kgShift = totalLbs * 0.453592;
+      final bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0.0;
+
+      calculatedResults['Lbs / shift'] = totalLbs.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Noil Lbs / shift'] = noilLbs.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    } else if (_department == 'Simplex (speed frame)') {
+      deptInputs['Flyer Speed'] = '${_spxFlyerSpeedCtrl.text} RPM';
+      deptInputs['TPI'] = _spxTpiCtrl.text;
+      deptInputs['Hank Roving'] = _spxHankCtrl.text;
+      deptInputs['Spindles'] = _spxSpindlesCtrl.text;
+      deptInputs['Frames'] = _spxFramesCtrl.text;
+
+      final flyerSpeed = _val(_spxFlyerSpeedCtrl);
+      final tpi = _val(_spxTpiCtrl);
+      final hankRoving = _val(_spxHankCtrl);
+      final spindles = _val(_spxSpindlesCtrl);
+      final frames = _val(_spxFramesCtrl);
+
+      final lbsSpindleShift = (tpi > 0 && hankRoving > 0)
+          ? (flyerSpeed / tpi / 36 / 840 * 60 * hrs * eff) / hankRoving
+          : 0.0;
+      final totalLbs = lbsSpindleShift * spindles * frames;
+      final kgShift = totalLbs * 0.453592;
+      final bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0.0;
+
+      calculatedResults['Lbs / shift'] = totalLbs.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    } else if (_department == 'Winding (autoconer)') {
+      deptInputs['Winding Speed'] = '${_wndSpeedCtrl.text} m/min';
+      deptInputs['Count (Ne)'] = _wndCountCtrl.text;
+      deptInputs['Spindles'] = _wndSpindlesCtrl.text;
+
+      final speed = _val(_wndSpeedCtrl);
+      final count = _val(_wndCountCtrl);
+      final spindles = _val(_wndSpindlesCtrl);
+
+      final deliveryYardsMin = speed * 1.0936;
+      final hanksMin = deliveryYardsMin / 840;
+      final lbsMinSpindle = count > 0 ? hanksMin / count : 0.0;
+      final lbsSpindleShift = lbsMinSpindle * 60 * hrs * eff;
+      final totalLbs = lbsSpindleShift * spindles;
+      final kgShift = totalLbs * 0.453592;
+      final bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0.0;
+
+      calculatedResults['Lbs / spl / shift'] =
+          lbsSpindleShift.toStringAsFixed(2);
+      calculatedResults['Lbs / shift'] = totalLbs.toStringAsFixed(2);
+      calculatedResults['Kg / shift'] = kgShift.toStringAsFixed(2);
+      calculatedResults['Bags / day'] = bagsDay.toStringAsFixed(2);
+    }
+
+    // Add inputs
+    widgets.add(PdfReportHelpers.sectionTitle('1. Input Parameters'));
+    final allInputs = {...deptInputs, ...commonInputs};
+    widgets.add(PdfReportHelpers.keyValGrid(allInputs));
+    widgets.add(pw.SizedBox(height: 12));
+
+    // Add results
+    widgets
+        .add(PdfReportHelpers.sectionTitle('2. Computed Production Results'));
+    widgets.add(
+      pw.Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: calculatedResults.entries.map((e) {
+          final isBags = e.key.toLowerCase().contains('bags');
+          return PdfReportHelpers.summaryCard(e.key, e.value,
+              highlight: isBags);
+        }).toList(),
+      ),
+    );
+
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageScaffold(
       title: 'Production Calculation',
       subtitle: 'Carding, draw frame, comber, simplex, ring frame, winding',
+      onGeneratePdfReport: _buildPdfReport,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -395,12 +581,14 @@ class _ProductionScreenState extends State<ProductionScreen> {
       double combers = _val(_cmbCombersCtrl);
       double lapWt = _val(_cmbLapWtCtrl);
 
-      double lbsHrHead = (nips * feedLength / 1000 * 1.0936 * 60 * lapWt / 7000) *
-          eff *
-          (100 - noilPct) /
-          100;
+      double lbsHrHead =
+          (nips * feedLength / 1000 * 1.0936 * 60 * lapWt / 7000) *
+              eff *
+              (100 - noilPct) /
+              100;
       double totalLbs = lbsHrHead * hrs * heads * combers;
-      double noilLbs = (100 - noilPct) > 0 ? (totalLbs / (100 - noilPct)) * noilPct : 0;
+      double noilLbs =
+          (100 - noilPct) > 0 ? (totalLbs / (100 - noilPct)) * noilPct : 0;
       double kgShift = totalLbs * 0.453592;
       double bagsDay = bagLbs > 0 ? (totalLbs * shifts) / bagLbs : 0;
 
